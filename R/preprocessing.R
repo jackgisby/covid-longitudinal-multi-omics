@@ -26,7 +26,7 @@ get_summarized_experiment <- function(
     counts_coldata <- data.frame(fread(metadata_path))
     
     # subset the counts by the metadata
-    counts <- counts[,colnames(counts) %in% w1_metadata$sample_id]
+    counts <- counts[,colnames(counts) %in% counts_coldata$sample_id]
     
     # create the final SE object
     se_object <- SummarizedExperiment(counts, colData = counts_coldata, rowData = count_row_names_joined)
@@ -66,6 +66,10 @@ normalize_se <- function(
         message("counts have been log transformed")
     }
     
+    if (normalisation_level == "logcpm") {
+        return(se)
+    }
+    
     # apply variance filter - if you specify a number rather than a percentige, this code converts it into a percentage
     if (variance_filter_cutoff > 1) {
         variance_filter_cutoff <- (variance_filter_cutoff / nrow(assay(se, 2))) * 100
@@ -78,5 +82,7 @@ normalize_se <- function(
     
     message(paste0(sum(ff_keep), " out of ", length(ff_keep), " genes kept after featurefilter"))
     
-    return(se)
+    if (normalisation_level == "variance_filtered") {
+        return(se)
+    }
 }
