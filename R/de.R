@@ -148,3 +148,31 @@ tt_volcano_plot <- function(tt, fc_col="logFC", de_p_cutoff=0.01, n_pos_fc=8, n_
     
     return(volcano_plot)
 }
+
+single_lmer <- function(data, formula_string) {
+    
+    out.model <- tryCatch(
+        lmerTest::lmer(
+            as.formula(formula_string),
+            data=data,
+            REML=TRUE,
+            control = lmerControl(check.conv.singular = "ignore"
+        )),
+        warning = function(w){
+            return(lmerTest::lmer(
+                as.formula(formula_string),
+                data=data,
+                REML=TRUE,
+                control=lmerControl(optimizer = "Nelder_Mead", check.conv.singular = "ignore")
+            ))
+        }
+    )
+    
+    
+    if(class(out.model) == "lmerModLmerTest") {
+        return(out.model)
+        
+    } else {
+        stop("Convergence issue not caught by single_lmer")
+    }
+}
