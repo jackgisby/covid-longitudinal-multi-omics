@@ -143,8 +143,12 @@ normalize_se <- function(
     filter_by_expr = TRUE
 ) {
     # keep highly expressed genes
+    if (!is.null(group)) {
+        group <- se[[group]]
+    }
+    
     if (filter_by_expr) {
-        fbe_keep <- filterByExpr(se, group=se[[group]])
+        fbe_keep <- filterByExpr(se, group=group)
         se <- se[fbe_keep,]
         
         message(paste0(sum(fbe_keep), " out of ", length(fbe_keep), " genes kept after filterByExpr"))
