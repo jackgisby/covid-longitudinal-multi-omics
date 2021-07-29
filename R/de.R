@@ -73,7 +73,7 @@ run_dream <- function(f, dge, L, debug=FALSE, L_is_contrasts=FALSE) {
         for (contrast in colnames(L)) {
             
             tt <- topTable(fitmm, coef = contrast, number = nrow(dge))
-            tt$gencode_id <- rownames(tt)
+            tt$ensembl_id <- rownames(tt)
             tt <- dplyr::left_join(tt, dge$genes)
             
             model_and_table[[paste0(contrast, "_tt")]] <- tt
@@ -89,7 +89,7 @@ run_dream <- function(f, dge, L, debug=FALSE, L_is_contrasts=FALSE) {
             contrast <- L[[contrast_name]]
             
             tt <- topTable(fitmm, coef = contrast, number = nrow(dge))
-            tt$gencode_id <- rownames(tt)
+            tt$ensembl_id <- rownames(tt)
             tt <- dplyr::left_join(tt, dge$genes)
             
             model_and_table[[paste0(contrast_name, "_tt")]] <- tt
