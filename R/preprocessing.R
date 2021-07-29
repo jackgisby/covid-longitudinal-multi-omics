@@ -27,7 +27,10 @@ get_summarized_experiment <- function(
     gencode_ids <- counts[,1]
     ensembl_ids <- sapply(strsplit(gencode_ids, ".", fixed=T), function(x) x[1])
     counts <- counts[,-1]
-    rownames(counts) <- gencode_ids
+    
+    # remove duplicate ensembl IDs
+    counts <- counts[!duplicated(ensembl_ids),]
+    rownames(counts) <- ensembl_ids
     
     # get gene ids from ensembl ids via biomart
     mart <- useDataset("hsapiens_gene_ensembl", useMart("ensembl"))
