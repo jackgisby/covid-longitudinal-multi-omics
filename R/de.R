@@ -61,50 +61,52 @@ run_dream <- function(f, dge, L, debug=FALSE, L_is_contrasts=FALSE) {
 }
 
 # run GSEA based on differential expression results
-run_enrichment <- function(tt, de_p_cutoff=0.01, go_p_cutoff=0.05, desc="case_control", method="go") {
+run_enrichment <- function(tt, de_p_cutoff=0.01, go_p_cutoff=0.05, desc="case_control") {
     
     # this named vector is required to create a topGO object
     geneList <- tt$P.Value
     names(geneList) <- tt$ensembl_id
     
-    if (method == "go") {
-        # get raw p value cutoff from adjusted p values
-        p_val_cutoff <- max(tt$P.Value[tt$adj.P.Val <= de_p_cutoff])
-        
-        # this selects the significant genes in the topgo object
-        get_sig_genes <- function (allScore) {
-            return(allScore < p_val_cutoff)
-        }
-        
-        # create the topgo object
-        tg_object <- new(
-            "topGOdata", 
-            description = desc,
-            ontology = "BP",
-            allGenes = geneList,
-            annotationFun = annFUN.org,
-            ID = "ensembl",
-            geneSelectionFun = get_sig_genes,
-            mapping = "org.Hs.eg.db"
-        )
-        
-        # run topGO GSEA
-        tg_terms <- runTest(tg_object, "weight01", "fisher")
-        
-        # extract topGO results
-        df_terms <- data.frame(tg_terms@score[tg_terms@score < go_p_cutoff])
-        colnames(df_terms) <- "p_value"
-        
-        df_terms$go_term <- rownames(df_terms)
-        df_terms$term_description <- Term(df_terms$go_term)
-        
-    } else if (method == "reactome") {
-        
-        names(geneList) <- mapIds(org.Hs.eg.db, keys=names(geneList), column="ENTREZID", keytype="ENSEMBL", multiVals="first")
-        de <- names(geneList)[geneList < de_p_cutoff]
-        
-        df_terms <- enrichPathway(de, qvalueCutoff = go_p_cutoff, universe = names(geneList), maxGSSize = 10000)@result
+    df_terms <- list()
+    
+    #-------- GO
+    
+    # get raw p value cutoff from adjusted p values
+    p_val_cutoff <- max(tt$P.Value[tt$adj.P.Val <= de_p_cutoff])
+    
+    # this selects the significant genes in the topgo object
+    get_sig_genes <- function (allScore) {
+        return(allScore < p_val_cutoff)
     }
+    
+    # create the topgo object
+    tg_object <- new(
+        "topGOdata", 
+        description = desc,
+        ontology = "BP",
+        allGenes = geneList,
+        annotationFun = annFUN.org,
+        ID = "ensembl",
+        geneSelectionFun = get_sig_genes,
+        mapping = "org.Hs.eg.db"
+    )
+    
+    # run topGO GSEA
+    tg_terms <- runTest(tg_object, "weight01", "fisher")
+    
+    # extract topGO results
+    df_terms[["GO"]] <- data.frame(tg_terms@score[tg_terms@score < go_p_cutoff])
+    colnames(df_terms[["GO"]]) <- "p_value"
+    
+    df_terms[["GO"]]$go_term <- rownames(df_terms[["GO"]])
+    df_terms[["GO"]]$term_description <- Term(df_terms[["GO"]]$go_term)
+        
+    #-------- REACTOME
+        
+    names(geneList) <- mapIds(org.Hs.eg.db, keys=names(geneList), column="ENTREZID", keytype="ENSEMBL", multiVals="first")
+    de <- names(geneList)[geneList < de_p_cutoff]
+    
+    df_terms[["REACTOME"]] <- enrichPathway(de, qvalueCutoff = go_p_cutoff, universe = names(geneList), maxGSSize = 10000)@result
     
     return(df_terms)
 }
@@ -166,22 +168,22 @@ make_violin_plots <- function(cpm_vec, label_vec, colour_vec) {
     return(violin_plot)
 }
 
-single_lmer <- function(data, formula_string) {
+single_lmer <- function(data, formula_string, REML=TRUE) {
     
     out.model <- tryCatch(
         lmerTest::lmer(
             as.formula(formula_string),
             data=data,
-            REML=TRUE,
+            REML=REML,
             control = lmerControl(check.conv.singular = "ignore"
             )),
-        warning = function(w){
-            return(lmerTest::lmer(
-                as.formula(formula_string),
-                data=data,
-                REML=TRUE,
-                control=lmerControl(optimizer = "Nelder_Mead", check.conv.singular = "ignore")
-            ))
+        warning = function(w) {
+        return(lmerTest::lmer(
+            as.formula(formula_string),
+            data=data,
+            REML=REML,
+            control=lmerControl(optimizer = "Nelder_Mead", check.conv.singular = "ignore")
+        ))
         }
     )
     
