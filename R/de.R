@@ -155,9 +155,6 @@ run_enrichment <- function(tt, de_p_cutoff=0.01, go_p_cutoff=0.05, desc="case_co
 
 tt_volcano_plot <- function(tt, fc_col="logFC", de_p_cutoff=0.01, n_pos_fc=8, n_neg_fc=n_pos_fc, n_pos_pval=n_pos_fc, n_neg_pval=n_pos_pval) {
     
-    # where there is no gene ID use ensembl ID
-    tt$gene_id[tt$gene_id == ""] <- tt$ensembl_id[tt$gene_id == ""]
-    
     # prepare colouring
     tt$de_col <- mapply(tt$adj.P.Val, tt[[fc_col]], FUN = function(adj_p, fc) {
         if (adj_p < de_p_cutoff) {

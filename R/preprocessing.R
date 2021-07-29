@@ -43,6 +43,8 @@ get_summarized_experiment <- function(
     count_row_names_joined <- dplyr::left_join(data.frame(gencode_id=gencode_ids, ensembl_id=ensembl_ids), ensembl_to_geneid, by = c("ensembl_id"="ensembl_gene_id"))
     colnames(count_row_names_joined) <- c("gencode_id", "ensembl_id", "gene_id")
     
+    count_row_names_joined$gene_id[count_row_names_joined$gene_id == ""] <- count_row_names_joined$ensembl_id[count_row_names_joined$gene_id == ""]
+    
     # incorrect sample naming
     colnames(counts) <- gsub("C133","C105", gsub("\\.", "_", gsub("CC", "C", gsub("HC", "", colnames(counts)))))
     
