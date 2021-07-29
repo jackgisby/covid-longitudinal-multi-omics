@@ -37,3 +37,19 @@ The main things to notice in the above script are:
  3. The `normalisation_level` `SummarizedExperiment` object contains both raw and normalised counts. Make sure to pick the right assay when doing your analysis.
 
 Further details and options can be found in the `R/preprocessing.R` file.
+
+## Dependencies
+
+Note that if you get an error (e.g. that a function cannot be found) it is likely that you need to load a particular package. Among the packages you might need to load are:
+ - ggplot2
+ - SummarizedExperiment
+ - data.table
+ - variancePartition
+ - edgeR
+ - BiocParallel
+ - biomaRt
+ - topGO
+ - GO.db
+ - splines
+ - ReactomePA
+ - org.Hs.eg.db
