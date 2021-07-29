@@ -41,14 +41,17 @@ normalize_se <- function(
     group = NULL, 
     log_transform = TRUE,
     variance_filter_cutoff=1000,
-    variance_filter_method="MAD"
+    variance_filter_method="MAD",
+    filter_by_expr = TRUE
 ) {
     
     # keep highly expressed genes
-    fbe_keep <- filterByExpr(assay(se), group=group)
-    se <- se[fbe_keep,]
-    
-    message(paste0(sum(fbe_keep), " out of ", length(fbe_keep), " genes kept after filterByExpr"))
+    if (filter_by_expr) {
+        fbe_keep <- filterByExpr(assay(se), group=group)
+        se <- se[fbe_keep,]
+        
+        message(paste0(sum(fbe_keep), " out of ", length(fbe_keep), " genes kept after filterByExpr"))
+    }
     
     # prepare edgeR normalisation
     dge <- calcNormFactors(se)

@@ -61,43 +61,52 @@ run_dream <- function(f, dge, L, debug=FALSE, L_is_contrasts=FALSE) {
 }
 
 # run GSEA based on differential expression results
-run_topgo <- function(tt, de_p_cutoff=0.01, go_p_cutoff=0.05, desc="case_control") {
+run_enrichment <- function(tt, de_p_cutoff=0.01, go_p_cutoff=0.05, desc="case_control", method="go") {
     
     # this named vector is required to create a topGO object
     geneList <- tt$P.Value
     names(geneList) <- tt$ensembl_id
     
-    # get raw p value cutoff from adjusted p values
-    p_val_cutoff <- max(tt$P.Value[tt$adj.P.Val <= de_p_cutoff])
-    
-    # this selects the significant genes in the topgo object
-    get_sig_genes <- function (allScore) {
-        return(allScore < p_val_cutoff)
+    if (method == "go") {
+        # get raw p value cutoff from adjusted p values
+        p_val_cutoff <- max(tt$P.Value[tt$adj.P.Val <= de_p_cutoff])
+        
+        # this selects the significant genes in the topgo object
+        get_sig_genes <- function (allScore) {
+            return(allScore < p_val_cutoff)
+        }
+        
+        # create the topgo object
+        tg_object <- new(
+            "topGOdata", 
+            description = desc,
+            ontology = "BP",
+            allGenes = geneList,
+            annotationFun = annFUN.org,
+            ID = "ensembl",
+            geneSelectionFun = get_sig_genes,
+            mapping = "org.Hs.eg.db"
+        )
+        
+        # run topGO GSEA
+        tg_terms <- runTest(tg_object, "weight01", "fisher")
+        
+        # extract topGO results
+        df_terms <- data.frame(tg_terms@score[tg_terms@score < go_p_cutoff])
+        colnames(df_terms) <- "p_value"
+        
+        df_terms$go_term <- rownames(df_terms)
+        df_terms$term_description <- Term(df_terms$go_term)
+        
+    } else if (method == "reactome") {
+        
+        names(geneList) <- mapIds(org.Hs.eg.db, keys=names(geneList), column="ENTREZID", keytype="ENSEMBL", multiVals="first")
+        de <- names(geneList)[geneList < de_p_cutoff]
+        
+        df_terms <- enrichPathway(de, qvalueCutoff = go_p_cutoff, universe = names(geneList), maxGSSize = 10000)@result
     }
     
-    # create the topgo object
-    w1_case_control_tg <- new(
-        "topGOdata", 
-        description = desc,
-        ontology = "BP",
-        allGenes = geneList,
-        annotationFun = annFUN.org,
-        ID = "ensembl",
-        geneSelectionFun = get_sig_genes,
-        mapping = "org.Hs.eg.db"
-    )
-    
-    # run topGO GSEA
-    w1_case_control_terms <- runTest(w1_case_control_tg, "weight01", "fisher")
-    
-    # extract topGO results
-    w1_case_control_df <- data.frame(w1_case_control_terms@score[w1_case_control_terms@score < go_p_cutoff])
-    colnames(w1_case_control_df) <- "p_value"
-    
-    w1_case_control_df$go_term <- rownames(w1_case_control_df)
-    w1_case_control_df$term_description <- Term(w1_case_control_df$go_term)
-    
-    return(w1_case_control_df)
+    return(df_terms)
 }
 
 # create volcano plots from differential expression data
@@ -143,6 +152,20 @@ tt_volcano_plot <- function(tt, fc_col="logFC", de_p_cutoff=0.01, n_pos_fc=8, n_
     return(volcano_plot)
 }
 
+make_violin_plots <- function(cpm_vec, label_vec, colour_vec) {
+    
+    ggplot_input <- data.frame("cpm"=cpm_vec, "label"=label_vec)
+    
+    violin_plot <- ggplot(ggplot_input, aes(label, cpm)) +
+        geom_violin(aes(fill=label)) +
+        scale_fill_manual(values=colour_vec) +
+        theme(legend.title = element_blank(), axis.title.x=element_blank()) +
+        geom_boxplot(width=0.1) +
+        ylab("logCPM")
+    
+    return(violin_plot)
+}
+
 single_lmer <- function(data, formula_string) {
     
     out.model <- tryCatch(
@@ -151,7 +174,7 @@ single_lmer <- function(data, formula_string) {
             data=data,
             REML=TRUE,
             control = lmerControl(check.conv.singular = "ignore"
-        )),
+            )),
         warning = function(w){
             return(lmerTest::lmer(
                 as.formula(formula_string),
