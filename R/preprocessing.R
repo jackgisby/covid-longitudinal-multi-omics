@@ -30,6 +30,8 @@ get_summarized_experiment <- function(
     
     # remove duplicate ensembl IDs
     counts <- counts[!duplicated(ensembl_ids),]
+    gencode_ids <- gencode_ids[!duplicated(ensembl_ids)]
+    ensembl_ids <- ensembl_ids[!duplicated(ensembl_ids)]
     rownames(counts) <- ensembl_ids
     
     # get gene ids from ensembl ids via biomart
