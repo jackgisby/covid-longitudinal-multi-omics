@@ -12,6 +12,15 @@
 #' you pass to this function, you will get the corresponding wave 1 or wave 2 
 #' samples in the returned `SummarizedExperiment.`
 #' 
+#' @param mart
+#' The line `mart <- useDataset("hsapiens_gene_ensembl", useMart("ensembl"))`
+#' is used to get gene names from ensembl, however this requires an internet
+#' connection, is somewhat time-consuming and puts needless strain on the 
+#' API. Therefore, you can save the "mart" object using the `saveRDS` function
+#' for subsequent uses. You can later use `readRDS` to get the mart object
+#' and give it to the `mart` argument of this function. This will then be
+#' used instead of querying the API to generate the `mart` object each time.
+#' 
 #' @return 
 #' Returns a `SummarizedExperiment` object containing the samples in the 
 #' file given by `metadata_path`. This is loaded with `rowData`, including
@@ -20,7 +29,8 @@
 
 get_summarized_experiment <- function(
     counts, 
-    metadata_path="scripts/20210713_salmon_counts_initial_look/w1_metadata.csv"
+    metadata_path="scripts/20210713_salmon_counts_initial_look/w1_metadata.csv",
+    mart=NULL
 ) {
     
     # get ensembl ids from gencode ids that come with the count matrix
@@ -35,7 +45,9 @@ get_summarized_experiment <- function(
     rownames(counts) <- ensembl_ids
     
     # get gene ids from ensembl ids via biomart
-    mart <- useDataset("hsapiens_gene_ensembl", useMart("ensembl"))
+    if (is.null(mart)) {
+        mart <- useDataset("hsapiens_gene_ensembl", useMart("ensembl"))
+    }
     
     ensembl_to_geneid <- getBM(filters="ensembl_gene_id", attributes=c("ensembl_gene_id","hgnc_symbol"), values=ensembl_ids, mart=mart)
     ensembl_to_geneid <- ensembl_to_geneid[!duplicated(ensembl_to_geneid$ensembl_gene_id),]
