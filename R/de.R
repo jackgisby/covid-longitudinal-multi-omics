@@ -139,16 +139,34 @@ run_enrichment <- function(tt, de_p_cutoff=0.01, go_p_cutoff=0.05, desc="case_co
     colnames(df_terms[["GO"]]) <- "p_value"
     
     df_terms[["GO"]]$go_term <- rownames(df_terms[["GO"]])
-    df_terms[["GO"]]$term_description <- Term(df_terms[["GO"]]$go_term)
+    
+    go_terms_to_descriptions <- as.list(GOTERM)
+    
+    df_terms[["GO"]]$term_description <- sapply(df_terms[["GO"]]$go_term, function(t) {
+        return(go_terms_to_descriptions[[t]]@Term)
+    })
         
     #-------- REACTOME
         
     names(geneList) <- mapIds(org.Hs.eg.db, keys=names(geneList), column="ENTREZID", keytype="ENSEMBL", multiVals="first")
     de <- names(geneList)[geneList < de_p_cutoff]
     
-    df_terms[["REACTOME"]] <- enrichPathway(de, qvalueCutoff = go_p_cutoff, universe = names(geneList), maxGSSize = 10000)@result
+    df_terms[["REACTOME"]] <- enrichPathway(de, qvalueCutoff = go_p_cutoff, universe = names(geneList), maxGSSize = 10000)
     
     return(df_terms)
+}
+
+#' Make plots describing an enrichment analysis
+
+plot_enrichment <- function(reactome_terms, go_p_cutoff = 0.05, num_terms = 30, n = 10) {
+    
+    # e_plot <- ReactomePA::emapplot(enrichplot::pairwise_termsim(reactome_terms), showCategory = num_terms, cex_line=0.2)
+    # 
+    # d_plot <- ReactomePA::dotplot(reactome_terms, showCategory = num_terms)
+    
+    u_plot <- enrichplot::upsetplot(reactome_terms, n = 10)
+    
+    return(u_plot)
 }
 
 #' Create volcano plots from differential expression data
