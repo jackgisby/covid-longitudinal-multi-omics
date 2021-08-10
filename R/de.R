@@ -112,11 +112,11 @@ run_enrichment <- function(tt, de_p_cutoff=0.01, go_p_cutoff=0.05, desc="case_co
     #-------- GO
     
     # get raw p value cutoff from adjusted p values
-    p_val_cutoff <- max(tt$P.Value[tt$adj.P.Val <= de_p_cutoff])
+    p_val_cutoff <- max(tt$P.Value[tt$adj.P.Val < de_p_cutoff])
     
     # this selects the significant genes in the topgo object
-    get_sig_genes <- function (allScore) {
-        return(allScore < p_val_cutoff)
+    get_sig_genes <- function(allScore) {
+        return(allScore <= p_val_cutoff)
     }
     
     # create the topgo object
@@ -145,11 +145,11 @@ run_enrichment <- function(tt, de_p_cutoff=0.01, go_p_cutoff=0.05, desc="case_co
     df_terms[["GO"]]$term_description <- sapply(df_terms[["GO"]]$go_term, function(t) {
         return(go_terms_to_descriptions[[t]]@Term)
     })
-        
+
     #-------- REACTOME
         
     names(geneList) <- mapIds(org.Hs.eg.db, keys=names(geneList), column="ENTREZID", keytype="ENSEMBL", multiVals="first")
-    de <- names(geneList)[geneList < de_p_cutoff]
+    de <- names(geneList)[geneList <= p_val_cutoff]
     
     df_terms[["REACTOME"]] <- enrichPathway(de, qvalueCutoff = go_p_cutoff, universe = names(geneList), maxGSSize = 10000)
     
