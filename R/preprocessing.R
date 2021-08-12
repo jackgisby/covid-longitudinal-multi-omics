@@ -70,6 +70,34 @@ get_summarized_experiment <- function(
     se_object <- SummarizedExperiment(counts, colData = counts_coldata, rowData = count_row_names_joined)
     assayNames(se_object) <- "counts"
     
+    # create a new time column
+    
+    se_object$time_from_first_positive_swab <- as.numeric(
+        as.Date(se_object$sample_date, format = "%d/%m/%Y") -
+        as.Date(se_object$date_first_positive_swab, format = "%d/%m/%Y")
+    )
+    
+    se_object$time_from_first_symptoms <- as.numeric(
+        as.Date(se_object$sample_date, format = "%d/%m/%Y") -
+        as.Date(se_object$date_first_symptoms, format = "%d/%m/%Y")
+    )
+    
+    se_object$time_from_first_x <- mapply(
+        
+        function(symptoms, swab) {
+            
+            if (is.na(symptoms)) {
+                return(swab)
+            } else if (is.na(swab)) {
+                return(symptoms)
+            } else {
+                return(max(symptoms, swab))
+            }
+        }, 
+        se_object$time_from_first_symptoms, 
+        se_object$time_from_first_positive_swab
+    )
+    
     return(se_object)
 }
 
