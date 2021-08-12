@@ -173,6 +173,10 @@ plot_enrichment <- function(reactome_terms, go_p_cutoff = 0.05, num_terms = 30, 
 
 tt_volcano_plot <- function(tt, fc_col="logFC", de_p_cutoff=0.01, n_pos_fc=8, n_neg_fc=n_pos_fc, n_pos_pval=n_pos_fc, n_neg_pval=n_pos_pval) {
     
+    colnames(tt) <- gsub("adj_p", "adj.P.Val", colnames(tt))
+    colnames(tt) <- gsub("pval", "P.Value", colnames(tt))
+    colnames(tt) <- gsub("term_id", "gene_id", colnames(tt))
+    
     # prepare colouring
     tt$de_col <- mapply(tt$adj.P.Val, tt[[fc_col]], FUN = function(adj_p, fc) {
         if (adj_p < de_p_cutoff) {
@@ -186,6 +190,8 @@ tt_volcano_plot <- function(tt, fc_col="logFC", de_p_cutoff=0.01, n_pos_fc=8, n_
         }
     })
     
+    tt$de_col <- factor(tt$de_col, c("downreg", "non_sig", "upreg"))
+
     # label the top up and downregulated genes
     top_pos_fc <- Rfast::nth(tt[[fc_col]][tt$adj.P.Val < de_p_cutoff], n_pos_fc, descending = TRUE)
     top_neg_fc <- Rfast::nth(tt[[fc_col]][tt$adj.P.Val < de_p_cutoff], n_neg_fc, descending = FALSE)
@@ -193,19 +199,20 @@ tt_volcano_plot <- function(tt, fc_col="logFC", de_p_cutoff=0.01, n_pos_fc=8, n_
     top_neg_pval <- Rfast::nth(tt$P.Value[tt[[fc_col]] < 0 & tt$adj.P.Val < de_p_cutoff], n_neg_pval, descending = FALSE)
     
     tt_to_label <- tt$adj.P.Val <= de_p_cutoff & (
-        tt[[fc_col]] >= top_pos_fc |
-            tt[[fc_col]] <= top_neg_fc |
-            (tt$P.Value <= top_pos_pval & tt[[fc_col]] > 0) |
-            (tt$P.Value <= top_neg_pval & tt[[fc_col]] < 0))
+                       tt[[fc_col]] >= top_pos_fc |
+                       tt[[fc_col]] <= top_neg_fc |
+                       (tt$P.Value <= top_pos_pval & tt[[fc_col]] > 0) |
+                       (tt$P.Value <= top_neg_pval & tt[[fc_col]] < 0))
     
     tt$logp <- -log10(tt$P.Value)
     
     # make the ggplot
     volcano_plot <- ggplot(tt, aes_string(fc_col, "logp", col="de_col")) +
         geom_point() +
-        scale_color_manual(values=c("#2C7BB6", "black", "#D7191C")) +
-        geom_text_repel(aes(label=gene_id), size = 2.25, color = "black", data = subset(tt, tt_to_label)) +
-        theme(legend.position = "none")
+        scale_color_manual(values = c("downreg" = "#2C7BB6", "non_sig" = "black", "upreg" = "#D7191C")) +
+        geom_text_repel(aes(label = gene_id), size = 2.25, color = "black", data = subset(tt, tt_to_label)) +
+        theme(legend.position = "none") +
+        xlab("Effect size")
     
     return(volcano_plot)
 }
@@ -254,4 +261,27 @@ single_lmer <- function(data, formula_string, REML=TRUE) {
     } else {
         stop("Convergence issue not caught by single_lmer")
     }
+}
+
+#' Differential expression of gene sets
+
+eset_de <- function(se, eset, formula_string, REML=TRUE) {
+    
+    col_data <- data.frame(colData(se))
+    
+    set_models <- list()
+    
+    for (i in 1:nrow(eset)) {
+        
+        # print(paste0(i, " / ", nrow(eset)))
+        
+        set_name <- rownames(eset)[i]
+        set_data <- data.frame(sample_id = colnames(eset), set_expr = eset[i,])
+        
+        set_data_with_covariates <- dplyr::left_join(set_data, col_data, by = c("sample_id" = "sample_id"))
+        
+        set_models[[set_name]] <- single_lmer(set_data_with_covariates, formula_string, REML = REML)
+    }
+    
+    return(set_models)
 }
