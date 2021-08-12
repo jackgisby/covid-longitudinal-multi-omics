@@ -157,6 +157,8 @@ normalize_se <- function(
     # keep highly expressed genes
     if (!is.null(group)) {
         group <- se[[group]]
+        
+        stopifnot(!is.null(group))
     }
     
     if (filter_by_expr) {
