@@ -98,6 +98,15 @@ get_summarized_experiment <- function(
         se_object$time_from_first_positive_swab
     )
     
+    # check we are using the maximum time
+    stopifnot(any(se_object$time_from_first_x > se_object$time_from_first_symptoms, na.rm = TRUE))
+    stopifnot(!any(se_object$time_from_first_x < se_object$time_from_first_symptoms, na.rm = TRUE))
+    stopifnot(any(se_object$time_from_first_x > se_object$time_from_first_positive_swab, na.rm = TRUE))
+    stopifnot(!any(se_object$time_from_first_x < se_object$time_from_first_positive_swab, na.rm = TRUE))
+    
+    stopifnot(!any(is.na(se_object$time_from_first_x[!is.na(se_object$time_from_first_symptoms)])))
+    stopifnot(!any(is.na(se_object$time_from_first_x[!is.na(se_object$time_from_first_positive_swab)])))
+    
     return(se_object)
 }
 
