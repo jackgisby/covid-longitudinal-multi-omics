@@ -285,3 +285,72 @@ eset_de <- function(se, eset, formula_string, REML=TRUE) {
     
     return(set_models)
 }
+
+#' longitudinal plot
+
+plot_longitudinal <- function(single_gene_normalised_logcpm, output_dir, gene_name, plot_type, model = NULL) {
+    
+    if (plot_type == "interaction") {
+        formula <- "gene_expr ~ bs(time_from_first_x, degree=2) * grouped_WHO_severity + sex + ethnicity + calc_age + (1 | individual_id)"
+    } else {
+        formula <- "gene_expr ~ bs(time_from_first_x, degree=2) + sex + ethnicity + calc_age + (1 | individual_id)"
+    }
+    
+    if (is.null(model)) {
+        single_gene_lmer <- single_lmer(single_gene_normalised_logcpm, formula)
+    } else {
+        single_gene_lmer <- model
+    }
+    
+    ind_table <- table(single_gene_normalised_logcpm$individual_id)
+    no_individual_points <- single_gene_normalised_logcpm[!(single_gene_normalised_logcpm$individual_id %in% names(ind_table)[ind_table == 1]),]
+    
+    if (plot_type == "interaction") {
+        
+        # use ggemmeans to estimate confidence intervals/fits
+        predictions <- ggemmeans(single_gene_lmer, c("time_from_first_x [all]", "grouped_WHO_severity"))
+        names(predictions) <- c("time_from_first_x", "gene_expr", "std.error", "conf.low", "conf.high", "grouped_WHO_severity")
+        
+        # plot just the CI estimations
+        estimates_only <- ggplot(predictions, aes(time_from_first_x, gene_expr, group=grouped_WHO_severity, fill=grouped_WHO_severity)) +
+            geom_line(aes(colour=grouped_WHO_severity), size=1.7) +
+            geom_ribbon(aes(ymin=conf.low, ymax=conf.high), alpha=0.055) +
+            scale_color_manual(values=c("#2C7BB6", "#D7191C")) +
+            scale_fill_manual(values=c("#2C7BB6", "#D7191C"))
+        
+        raw_plot <- ggplot(single_gene_normalised_logcpm[!(single_gene_normalised_logcpm$individual_id %in% names(ind_table)[ind_table == 1]),], aes(time_from_first_x, gene_expr, col = grouped_WHO_severity)) +
+            geom_point(alpha = 0.7, size=0.7) +
+            geom_line(aes(group = individual_id), alpha = 0.7, size=0.8) +
+            scale_color_manual(values = c("#2C7BB6", "#D7191C")) +
+            facet_wrap(~grouped_WHO_severity)
+        
+    } else {
+        
+        # use ggemmeans to estimate confidence intervals/fits
+        predictions <- ggemmeans(single_gene_lmer, c("time_from_first_x [all]"))
+        names(predictions) <- c("time_from_first_x", "gene_expr", "std.error", "conf.low", "conf.high")
+        
+        # plot just the CI estimations
+        estimates_only <- ggplot(predictions, aes(time_from_first_x, gene_expr)) +
+            geom_line(size=1.7) +
+            geom_ribbon(aes(ymin=conf.low, ymax=conf.high), alpha=0.055)
+        
+        # plot the raw points
+        raw_plot <- ggplot(no_individual_points, aes(time_from_first_x, gene_expr)) +
+            geom_point(alpha = 0.7, size=0.7) +
+            geom_line(aes(group = individual_id), alpha = 0.7, size=0.8)
+
+    }
+        
+    estimates_only <- estimates_only +             
+        xlab("Time from first symptoms (days)") +
+        ylab(paste0(gene_name, " expression (TMM normalised logCPM)"))
+        
+    ggsave(paste0(output_dir, gene_name, "_effects.svg"), estimates_only, device="svg", width=78.123*1.8, height=63.760*1.5, units = "mm")
+    ggsave(paste0(output_dir, gene_name, "_raw.svg"), raw_plot, device="svg", width=78.123*1.8, height=63.760*1.5, units = "mm")
+    
+    return(list(
+        "estimates_only" = estimates_only,
+        "raw_plot" = raw_plot
+    ))
+}
