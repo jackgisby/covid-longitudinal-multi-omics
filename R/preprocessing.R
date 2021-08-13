@@ -71,6 +71,7 @@ get_summarized_experiment <- function(
     assayNames(se_object) <- "counts"
     
     # create a new time column
+    colnames(colData(se_object)) <- gsub("date_positive_swab", "date_first_positive_swab", colnames(colData(se_object)))
     
     se_object$time_from_first_positive_swab <- as.numeric(
         as.Date(se_object$sample_date, format = "%d/%m/%Y") -
@@ -82,21 +83,38 @@ get_summarized_experiment <- function(
         as.Date(se_object$date_first_symptoms, format = "%d/%m/%Y")
     )
     
-    se_object$time_from_first_x <- mapply(
+    se_object$date_first_x <- se_object$date_first_symptoms
+    se_object$time_from_first_x <- se_object$time_from_first_symptoms
+    
+    for (i in 1:length(se_object$time_from_first_symptoms)) {
         
-        function(symptoms, swab) {
+        if (is.na(se_object$time_from_first_symptoms[i])) {
             
-            if (is.na(symptoms)) {
-                return(swab)
-            } else if (is.na(swab)) {
-                return(symptoms)
+            max_time <- "swab"
+            
+        } else if (is.na(is.na(se_object$time_from_first_positive_swab[i]))) {
+            
+            max_time <- "symptoms"
+            
+        } else {
+            
+            if (se_object$time_from_first_symptoms[i] > se_object$time_from_first_positive_swab[i]) {
+                max_time <- "symptoms"
             } else {
-                return(max(symptoms, swab))
+                max_time <- "swab"
             }
-        }, 
-        se_object$time_from_first_symptoms, 
-        se_object$time_from_first_positive_swab
-    )
+        }
+        
+        if (max_time == "swab") {
+            
+            se_object$date_first_x[i] <- se_object$date_first_positive_swab[i]
+            se_object$time_from_first_x[i] <- se_object$time_from_first_positive_swab[i]
+            
+        } else {
+            se_object$date_first_x[i] <- se_object$date_first_symptoms[i]
+            se_object$time_from_first_x[i] <- se_object$time_from_first_symptoms[i]
+        }
+    }
     
     # check we are using the maximum time
     stopifnot(any(se_object$time_from_first_x > se_object$time_from_first_symptoms, na.rm = TRUE))
