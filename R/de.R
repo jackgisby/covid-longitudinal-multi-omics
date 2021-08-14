@@ -343,7 +343,11 @@ plot_longitudinal <- function(single_gene_normalised_logcpm, output_dir, gene_na
     }
         
     estimates_only <- estimates_only +             
-        xlab("Time from first symptoms (days)") +
+        xlab("Time from first max(symptoms, swab) (days)") +
+        ylab(paste0(gene_name, " expression (TMM normalised logCPM)"))
+    
+    raw_plot <- raw_plot +             
+        xlab("Time from first max(symptoms, swab) (days)") +
         ylab(paste0(gene_name, " expression (TMM normalised logCPM)"))
         
     ggsave(paste0(output_dir, gene_name, "_effects.svg"), estimates_only, device="svg", width=78.123*1.8, height=63.760*1.5, units = "mm")
