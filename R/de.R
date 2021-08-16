@@ -199,9 +199,10 @@ tt_volcano_plot <- function(tt, fc_col = "logFC", de_p_cutoff = 0.01, n_pos_fc =
   tt$logp <- -log10(tt$P.Value)
 
   # make the ggplot
-  volcano_plot <- ggplot(tt, aes_string(fc_col, "logp", col = "de_col")) +
-    geom_point() +
+  volcano_plot <- ggplot(tt, aes_string(fc_col, "logp", fill = "de_col")) +
+    geom_point(size = 2, alpha = 0.8, color = "black", pch = 21) +
     scale_color_manual(values = c("downreg" = "#2C7BB6", "non_sig" = "black", "upreg" = "#D7191C")) +
+    scale_fill_manual(values = c("downreg" = "#2C7BB6", "non_sig" = "black", "upreg" = "#D7191C")) +
     geom_text_repel(aes(label = gene_id), size = 2.25, color = "black", data = subset(tt, tt_to_label)) +
     theme(legend.position = "none") +
     xlab("Effect size")
@@ -231,11 +232,11 @@ make_sticky_plots <- function(cpm_vec, label_vec, ind_vec, colour_vec) {
   ggplot_input$label_plus_jitter <- ggplot_input$label_int + runif(ggplot_input$label_int, -0.02, 0.02)
   
   sticky_plot <- ggplot(ggplot_input, aes(x = label, y = cpm)) +
-    geom_violin(aes(x = label, fill = as.factor(label)), alpha = 0.5, color = "white") + # Create violin distributions
+    geom_violin(aes(x = label, fill = as.factor(label)), alpha = 0.65, color = "white") + # Create violin distributions
     geom_boxplot(aes(group = label), width = 0.1, outlier.shape = NA, coef = 0) +
     geom_rect(mapping = aes(xmin = 1, xmax = 2, ymin = min(cpm), ymax = max(cpm)), fill = "white") + # Cut distributions in half
-    geom_line(aes(x = label_plus_jitter, group = ind), color = "grey", alpha = 0.8) + # Create lines between points for each subject
-    geom_point(aes(x = label_plus_jitter, col = label), alpha = 0.8) + # Insert each participants data points
+    geom_line(aes(x = label_plus_jitter, group = ind), color = "grey") + # Create lines between points for each subject
+    geom_point(aes(x = label_plus_jitter, fill = label), alpha = 0.9, pch = 21, color = "black", size = 2) + # Insert each participants data points
     # stat_summary(aes(x = label_int, y = cpm), fun = median, geom = "line", color = "black", size = 0.8) + # Create grand averaged effects line
     ylab("logCPM") +
     scale_fill_manual(values = colour_vec) +
