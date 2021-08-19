@@ -259,3 +259,43 @@ normalize_se <- function(
         return(se)
     }
 }
+
+#' load soma data
+
+get_soma_data <- function(soma_abundance, sample_meta, sample_technical_meta, feature_meta, ret_wide = FALSE) {
+    
+    soma_abundance <- read.table(soma_abundance, row.names = 1, sep = ",", header = TRUE)
+    feature_meta <- read.csv(feature_meta)
+    
+    w_metadata <- data.frame(fread(sample_meta))
+    sample_technical_meta <- read.csv(sample_technical_meta)
+    
+    w_metadata <- w_metadata[w_metadata$sample_id %in% sample_technical_meta$sample_id,]
+    sample_technical_meta <- sample_technical_meta[sample_technical_meta$sample_id %in% w_metadata$sample_id,]
+    
+    combined_meta <- dplyr::left_join(sample_technical_meta, w_metadata)
+    
+    soma_abundance <- soma_abundance[rownames(soma_abundance) %in% combined_meta$sample_id,]
+    
+    if (ret_wide) {
+        return(list(
+            soma_abundance = soma_abundance,
+            sample_meta = combined_meta,
+            feature_meta = feature_meta
+        ))
+    }
+    
+    soma_abundance$sample_id <- rownames(soma_abundance)
+    
+    soma_abundance <- tidyr::pivot_longer(soma_abundance, -sample_id, names_to = "converted_seq_ids", values_to = "RFU")
+    
+    prev_nrow <- nrow(soma_abundance)
+    soma_abundance <- dplyr::left_join(soma_abundance, combined_meta, by = c("sample_id" = "sample_id"))
+    stopifnot(nrow(soma_abundance) == prev_nrow)
+    
+    prev_nrow <- nrow(soma_abundance)
+    soma_abundance <- dplyr::left_join(soma_abundance, feature_meta, by = c("converted_seq_ids" = "converted_seq_ids"))
+    stopifnot(nrow(soma_abundance) == prev_nrow)
+    
+    return(soma_abundance)
+}
