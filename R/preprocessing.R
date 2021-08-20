@@ -65,9 +65,18 @@ get_summarized_experiment <- function(
     
     # subset the counts by the metadata
     counts <- counts[,colnames(counts) %in% counts_coldata$sample_id]
+    counts_coldata <- counts_coldata[counts_coldata$sample_id %in% colnames(counts),]
+    
+    stopifnot(all(colnames(counts) %in% counts_coldata$sample_id))
+    
+    counts_coldata_joined <- dplyr::left_join(
+        data.frame(sample_id = colnames(counts)),
+        counts_coldata,
+        by = c("sample_id" = "sample_id")
+    )
     
     # create the final SE object
-    se_object <- SummarizedExperiment(counts, colData = counts_coldata, rowData = count_row_names_joined)
+    se_object <- SummarizedExperiment(counts, colData = counts_coldata_joined, rowData = count_row_names_joined)
     assayNames(se_object) <- "counts"
     
     # create a new time column
@@ -117,9 +126,7 @@ get_summarized_experiment <- function(
     }
     
     # check we are using the maximum time
-    stopifnot(any(se_object$time_from_first_x > se_object$time_from_first_symptoms, na.rm = TRUE))
     stopifnot(!any(se_object$time_from_first_x < se_object$time_from_first_symptoms, na.rm = TRUE))
-    stopifnot(any(se_object$time_from_first_x > se_object$time_from_first_positive_swab, na.rm = TRUE))
     stopifnot(!any(se_object$time_from_first_x < se_object$time_from_first_positive_swab, na.rm = TRUE))
     
     stopifnot(!any(is.na(se_object$time_from_first_x[!is.na(se_object$time_from_first_symptoms)])))
@@ -273,9 +280,61 @@ get_soma_data <- function(soma_abundance, sample_meta, sample_technical_meta, fe
     w_metadata <- w_metadata[w_metadata$sample_id %in% sample_technical_meta$sample_id,]
     sample_technical_meta <- sample_technical_meta[sample_technical_meta$sample_id %in% w_metadata$sample_id,]
     
-    combined_meta <- dplyr::left_join(sample_technical_meta, w_metadata)
+    combined_meta <- dplyr::left_join(sample_technical_meta, w_metadata, by = c("sample_id" = "sample_id", "individual_id" = "individual_id"))
     
     soma_abundance <- soma_abundance[rownames(soma_abundance) %in% combined_meta$sample_id,]
+    
+    colnames(combined_meta) <- gsub("date_positive_swab", "date_first_positive_swab", colnames(combined_meta))
+    
+    combined_meta$time_from_first_positive_swab <- as.numeric(
+        as.Date(combined_meta$sample_date, format = "%d/%m/%Y") -
+            as.Date(combined_meta$date_first_positive_swab, format = "%d/%m/%Y")
+    )
+    
+    combined_meta$time_from_first_symptoms <- as.numeric(
+        as.Date(combined_meta$sample_date, format = "%d/%m/%Y") -
+            as.Date(combined_meta$date_first_symptoms, format = "%d/%m/%Y")
+    )
+    
+    combined_meta$date_first_x <- combined_meta$date_first_symptoms
+    combined_meta$time_from_first_x <- combined_meta$time_from_first_symptoms
+    
+    for (i in 1:length(combined_meta$time_from_first_symptoms)) {
+        
+        if (is.na(combined_meta$time_from_first_symptoms[i])) {
+            
+            max_time <- "swab"
+            
+        } else if (is.na(is.na(combined_meta$time_from_first_positive_swab[i]))) {
+            
+            max_time <- "symptoms"
+            
+        } else {
+            
+            if (combined_meta$time_from_first_symptoms[i] > combined_meta$time_from_first_positive_swab[i]) {
+                max_time <- "symptoms"
+            } else {
+                max_time <- "swab"
+            }
+        }
+        
+        if (max_time == "swab") {
+            
+            combined_meta$date_first_x[i] <- combined_meta$date_first_positive_swab[i]
+            combined_meta$time_from_first_x[i] <- combined_meta$time_from_first_positive_swab[i]
+            
+        } else {
+            combined_meta$date_first_x[i] <- combined_meta$date_first_symptoms[i]
+            combined_meta$time_from_first_x[i] <- combined_meta$time_from_first_symptoms[i]
+        }
+    }
+
+    # check we are using the maximum time
+    stopifnot(!any(combined_meta$time_from_first_x < combined_meta$time_from_first_symptoms, na.rm = TRUE))
+    stopifnot(!any(combined_meta$time_from_first_x < combined_meta$time_from_first_positive_swab, na.rm = TRUE))
+
+    stopifnot(!any(is.na(combined_meta$time_from_first_x[!is.na(combined_meta$time_from_first_symptoms)])))
+    stopifnot(!any(is.na(combined_meta$time_from_first_x[!is.na(combined_meta$time_from_first_positive_swab)])))
     
     if (ret_wide) {
         return(list(

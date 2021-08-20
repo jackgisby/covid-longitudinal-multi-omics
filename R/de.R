@@ -296,6 +296,22 @@ eset_de <- function(se, eset, formula_string, REML = TRUE) {
   return(set_models)
 }
 
+#' Differential expression for soma
+
+soma_de <- function(soma_long, formula_string, REML = TRUE) {
+  
+  set_models <- list()
+  
+  for (prot_name in unique(soma_long$converted_seq_ids)) {
+    
+    prot_long <- soma_long[soma_long$converted_seq_ids == prot_name,]
+    
+    set_models[[prot_name]] <- single_lmer(prot_long, formula_string, REML = REML)
+  }
+  
+  return(set_models)
+}
+
 #' longitudinal plot
 
 plot_longitudinal <- function(single_gene_normalised_logcpm, output_dir, gene_name, plot_type, model = NULL) {
