@@ -284,6 +284,19 @@ get_soma_data <- function(soma_abundance, sample_meta, sample_technical_meta, fe
     
     soma_abundance <- soma_abundance[rownames(soma_abundance) %in% combined_meta$sample_id,]
     
+    rank_norm <- function(u, k = 0.375) {
+        
+        n <- length(u)
+        r <- rank(u)
+        
+        return(qnorm((r - k) / (n - 2 * k + 1)))
+    }
+    
+    for (i in 1:ncol(soma_abundance)) {
+        
+        soma_abundance[,i] <- rank_norm(soma_abundance[,i])
+    }
+    
     colnames(combined_meta) <- gsub("date_positive_swab", "date_first_positive_swab", colnames(combined_meta))
     
     combined_meta$time_from_first_positive_swab <- as.numeric(

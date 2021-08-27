@@ -200,10 +200,10 @@ tt_volcano_plot <- function(tt, fc_col = "logFC", de_p_cutoff = 0.01, n_pos_fc =
 
   # make the ggplot
   volcano_plot <- ggplot(tt, aes_string(fc_col, "logp", fill = "de_col")) +
-    geom_point(size = 2, alpha = 0.8, color = "black", pch = 21) +
+    geom_point(size = 1.2, alpha = 0.8, color = "black", pch = 21, stroke = 0.05) +
     scale_color_manual(values = c("downreg" = "#2C7BB6", "non_sig" = "black", "upreg" = "#D7191C")) +
     scale_fill_manual(values = c("downreg" = "#2C7BB6", "non_sig" = "black", "upreg" = "#D7191C")) +
-    geom_text_repel(aes(label = gene_id), size = 2.25, color = "black", data = subset(tt, tt_to_label)) +
+    geom_text_repel(aes(label = gene_id), size = 1.5, color = "black", data = subset(tt, tt_to_label), min.segment.length	= 0.1) +
     theme(legend.position = "none") +
     xlab("Effect size")
 
