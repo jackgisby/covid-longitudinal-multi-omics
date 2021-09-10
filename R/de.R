@@ -236,7 +236,7 @@ make_sticky_plots <- function(cpm_vec, label_vec, ind_vec, colour_vec) {
     geom_boxplot(aes(group = label), width = 0.1, outlier.shape = NA, coef = 0) +
     geom_rect(mapping = aes(xmin = 1, xmax = 2, ymin = min(cpm), ymax = max(cpm)), fill = "white") + # Cut distributions in half
     geom_line(aes(x = label_plus_jitter, group = ind), color = "grey") + # Create lines between points for each subject
-    geom_point(aes(x = label_plus_jitter, fill = label), alpha = 0.9, pch = 21, color = "black", size = 2) + # Insert each participants data points
+    geom_point(aes(x = label_plus_jitter, fill = label), alpha = 0.9, pch = 21, color = "black", size = 1.2) + # Insert each participants data points
     # stat_summary(aes(x = label_int, y = cpm), fun = median, geom = "line", color = "black", size = 0.8) + # Create grand averaged effects line
     ylab("logCPM") +
     scale_fill_manual(values = colour_vec) +
@@ -314,7 +314,7 @@ soma_de <- function(soma_long, formula_string, REML = TRUE) {
 
 #' longitudinal plot
 
-plot_longitudinal <- function(single_gene_normalised_logcpm, output_dir, gene_name, plot_type, model = NULL) {
+plot_longitudinal <- function(single_gene_normalised_logcpm, output_dir, gene_name, plot_type, model = NULL, height = 4) {
   if (plot_type == "interaction") {
     formula <- "gene_expr ~ bs(time_from_first_x, degree=2) * grouped_WHO_severity + sex + ethnicity + calc_age + (1 | individual_id)"
   } else {
@@ -347,7 +347,9 @@ plot_longitudinal <- function(single_gene_normalised_logcpm, output_dir, gene_na
       geom_point(alpha = 0.7, size = 0.7) +
       geom_line(aes(group = individual_id), alpha = 0.7, size = 0.8) +
       scale_color_manual(values = c("#2C7BB6", "#D7191C")) +
-      facet_wrap(~grouped_WHO_severity)
+      facet_wrap(~grouped_WHO_severity) + 
+      theme(strip.background = element_blank(), strip.text.x = element_blank(), strip.text.y = element_blank())
+    
   } else {
 
     # use ggemmeans to estimate confidence intervals/fits
@@ -373,8 +375,8 @@ plot_longitudinal <- function(single_gene_normalised_logcpm, output_dir, gene_na
     xlab("Time from first max(symptoms, swab) (days)") +
     ylab(paste0(gene_name, " expression (TMM normalised logCPM)"))
 
-  ggsave(paste0(output_dir, gene_name, "_effects.svg"), estimates_only, device = "svg", width = 78.123 * 1.8, height = 63.760 * 1.5, units = "mm")
-  ggsave(paste0(output_dir, gene_name, "_raw.svg"), raw_plot, device = "svg", width = 78.123 * 1.8, height = 63.760 * 1.5, units = "mm")
+  ggsave(paste0(output_dir, gene_name, "_effects.svg"), estimates_only, device = "svg", width = 78.123 * 0.9, height = height, units = "mm")
+  ggsave(paste0(output_dir, gene_name, "_raw.svg"), raw_plot, device = "svg", width = 78.123 * 1.35, height = height, units = "mm")
 
   return(list(
     "estimates_only" = estimates_only,

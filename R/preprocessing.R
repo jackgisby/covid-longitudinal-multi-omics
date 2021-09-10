@@ -253,6 +253,8 @@ normalize_se <- function(
     # apply variance filter - if you specify a number rather than a percentige, this code converts it into a percentage
     if (variance_filter_cutoff > 1) {
         variance_filter_cutoff <- (variance_filter_cutoff / nrow(assay(se, 2))) * 100
+    } else {
+        variance_filter_cutoff <- variance_filter_cutoff * 100
     }
     
     # figure out which genes to keep based on variability (default is mean absolute deviation)
