@@ -252,10 +252,10 @@ normalize_se <- function(
     
     # apply variance filter - if you specify a number rather than a percentige, this code converts it into a percentage
     if (variance_filter_cutoff > 1) {
-        variance_filter_cutoff <- (variance_filter_cutoff / nrow(assay(se, 2))) * 100
-    } else {
-        variance_filter_cutoff <- variance_filter_cutoff * 100
+        variance_filter_cutoff <- variance_filter_cutoff / nrow(assay(se, 2))
     }
+    
+    variance_filter_cutoff <- variance_filter_cutoff * 100
     
     # figure out which genes to keep based on variability (default is mean absolute deviation)
     ff_keep <- rownames(M3C::featurefilter(assay(se, 2), percentile = variance_filter_cutoff, method=variance_filter_method, topN = 5)[[1]])
@@ -269,11 +269,29 @@ normalize_se <- function(
     }
 }
 
+#' rank normalise a vector of data
+
+rank_norm <- function(u, k = 0.375) {
+    
+    n <- length(u)
+    r <- rank(u)
+    
+    return(qnorm((r - k) / (n - 2 * k + 1)))
+}
+
 #' load soma data
 
-get_soma_data <- function(soma_abundance, sample_meta, sample_technical_meta, feature_meta, ret_wide = FALSE) {
+get_soma_data <- function(soma_abundance, sample_meta, sample_technical_meta, feature_meta, ret_wide = FALSE, normalise_together = TRUE) {
     
     soma_abundance <- read.table(soma_abundance, row.names = 1, sep = ",", header = TRUE)
+    
+    if (normalise_together) {
+        for (i in 1:ncol(soma_abundance)) {
+            
+            soma_abundance[,i] <- rank_norm(soma_abundance[,i])
+        }
+    }
+    
     feature_meta <- read.csv(feature_meta)
     
     w_metadata <- data.frame(fread(sample_meta))
@@ -286,17 +304,11 @@ get_soma_data <- function(soma_abundance, sample_meta, sample_technical_meta, fe
     
     soma_abundance <- soma_abundance[rownames(soma_abundance) %in% combined_meta$sample_id,]
     
-    rank_norm <- function(u, k = 0.375) {
-        
-        n <- length(u)
-        r <- rank(u)
-        
-        return(qnorm((r - k) / (n - 2 * k + 1)))
-    }
-    
-    for (i in 1:ncol(soma_abundance)) {
-        
-        soma_abundance[,i] <- rank_norm(soma_abundance[,i])
+    if (!normalise_together) {
+        for (i in 1:ncol(soma_abundance)) {
+            
+            soma_abundance[,i] <- rank_norm(soma_abundance[,i])
+        }
     }
     
     colnames(combined_meta) <- gsub("date_positive_swab", "date_first_positive_swab", colnames(combined_meta))
