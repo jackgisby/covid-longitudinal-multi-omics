@@ -1,0 +1,254 @@
+"sample_id","individual_id","ethnicity","sex","calc_age","ihd","previous_vte","copd","diabetes","smoking","cause_eskd","WHO_severity","WHO_temp_severity","fatal_disease","case_control","radiology_evidence_covid","time_from_first_symptoms","time_from_first_positive_swab"
+"C126_positive_7","C126","asian","M",64,"no","no","no","no","never","Unknown","mild","mild",FALSE,"POSITIVE","not.done",7,7
+"C89_negative","C89","asian","F",70,"yes.cabg","no","no","yes.T2","not.current","DN (bx or presumed)",NA,"NEGATIVE",NA,"NEGATIVE",NA,NA,NA
+"C132_positive_19","C132","asian","F",77,"yes.cabg","no","no","yes.T2","not.current","DN (bx or presumed)","moderate","mild",FALSE,"POSITIVE","not.done",19,18
+"C60_positive_4","C60","white","M",80,"no","no","yes","yes.T2","not.current","DN (bx or presumed)","severe","moderate",FALSE,"POSITIVE","cxr",4,2
+"C23_positive_13","C23","asian","F",78,"yes.no.intervention","no","no","yes.T2","never","DN (bx or presumed)","moderate","moderate",FALSE,"POSITIVE","cxr",13,12
+"C87_positive_13","C87","asian","M",71,"unknown","no","no","yes.T2","not.current","DN (bx or presumed)","mild","mild",FALSE,"POSITIVE","cxr",13,13
+"C40_positive_9","C40","black","M",57,"unknown","no","no","yes.T2","not.current","Other","critical","moderate",FALSE,"POSITIVE","cxr",9,9
+"C124_positive_12","C124","asian","M",81,"yes.stent","no","no","no","not.current","DN (bx or presumed)","moderate","mild",FALSE,"POSITIVE","cxr",12,7
+"C85_negative","C85","white","F",74,"yes.no.intervention","yes.dvt","no","yes.T2","not.current","GN/Autoimmune",NA,"NEGATIVE",NA,"NEGATIVE",NA,NA,NA
+"C116_positive_4","C116","white","M",87,"yes.no.intervention","no","no","no","not.current","GN/Autoimmune","critical","moderate",FALSE,"POSITIVE","cxr",4,3
+"C63_positive_17","C63","black","M",45,"yes.stent","no","no","yes.T2","not.current","DN (bx or presumed)","moderate","mild",FALSE,"POSITIVE","cxr",17,14
+"C20_positive_8","C20","asian","M",62,"yes.stent","no","no","yes.T2","not.current","DN (bx or presumed)","severe","moderate",FALSE,"POSITIVE","cxr",8,7
+"C73_positive_7","C73","white","M",88,"yes.stent","no","no","yes.T2","not.current","DN (bx or presumed)","severe","moderate",FALSE,"POSITIVE","cxr",7,3
+"C33_negative","C33","asian","M",75,"yes.cabg","no","no","yes.T2","not.current","Unknown",NA,"NEGATIVE",NA,"NEGATIVE",NA,NA,NA
+"C127_positive_21","C127","other","F",69,"yes.cabg","no","no","yes.T2","never","DN (bx or presumed)","moderate","mild",FALSE,"POSITIVE","cxr",21,18
+"C127_positive_14","C127","other","F",69,"yes.cabg","no","no","yes.T2","never","DN (bx or presumed)","moderate","moderate",FALSE,"POSITIVE","cxr",14,11
+"C123_positive_18","C123","asian","M",66,"yes.stent","no","no","yes.T2","not.current","DN (bx or presumed)","severe","moderate",FALSE,"POSITIVE","cxr",18,15
+"C196_negative","C196","white","M",72,"unknown","no","no","no","not.current","Other",NA,"NEGATIVE",NA,"NEGATIVE",NA,NA,NA
+"C82_positive_11","C82","other","F",60,"no","no","no","no","not.current","HTN/vascular","mild","mild",FALSE,"POSITIVE","cxr",11,11
+"C193_negative","C193","white","M",82,"no","no","no","no","ex","Other",NA,"NEGATIVE",NA,"NEGATIVE",NA,NA,NA
+"C163_negative","C163","asian","M",69,"no","no","no","no","not.current","GN/Autoimmune",NA,"NEGATIVE",NA,"NEGATIVE",NA,NA,NA
+"C23_positive_20","C23","asian","F",78,"yes.no.intervention","no","no","yes.T2","never","DN (bx or presumed)","moderate","moderate",FALSE,"POSITIVE","cxr",20,19
+"C145_negative","C145","asian","F",65,"no","no","no","yes.T2","not.current","DN (bx or presumed)",NA,"NEGATIVE",NA,"NEGATIVE",NA,NA,NA
+"C73_positive_14","C73","white","M",88,"yes.stent","no","no","yes.T2","not.current","DN (bx or presumed)","severe","mild",FALSE,"POSITIVE","cxr",14,10
+"C49_positive_2","C49","white","M",73,"yes.cabg","no","no","yes.T2","not.current","DN (bx or presumed)","critical","moderate",TRUE,"POSITIVE","cxr",2,0
+"C104_negative","C104","other","M",81,"no","no","no","no","not.current","HTN/vascular",NA,"NEGATIVE",NA,"NEGATIVE",NA,NA,NA
+"C169_negative","C169","asian","F",73,"yes.no.intervention","no","no","no","not.current","Unknown",NA,"NEGATIVE",NA,"NEGATIVE",NA,NA,NA
+"C68_positive_5","C68","other","M",75,"no","no","no","no","not.current","Other","mild","mild",FALSE,"POSITIVE","not.done",5,5
+"C132_positive_10","C132","asian","F",77,"yes.cabg","no","no","yes.T2","not.current","DN (bx or presumed)","moderate","mild",FALSE,"POSITIVE","not.done",10,9
+"C37_positive_9","C37","asian","F",82,"no","no","no","yes.T2","never","DN (bx or presumed)","critical","critical",TRUE,"POSITIVE","cxr",9,2
+"C93_positive_7","C93","white","M",87,"unknown","no","no","yes.T2","not.current","Unknown","moderate","mild",FALSE,"POSITIVE","cxr",7,7
+"C161_negative","C161","other","M",65,"no","no","no","yes.T2","not.current","Unknown",NA,"NEGATIVE",NA,"NEGATIVE",NA,NA,NA
+"C142_negative","C142","asian","M",74,"no","no","no","no","not.current","GN/Autoimmune",NA,"NEGATIVE",NA,"NEGATIVE",NA,NA,NA
+"C124_positive_16","C124","asian","M",81,"yes.stent","no","no","no","not.current","DN (bx or presumed)","moderate","mild",FALSE,"POSITIVE","cxr",16,11
+"C128_positive_21","C128","asian","M",72,"unknown","no","no","yes.T2","not.current","DN (bx or presumed)","mild","mild",FALSE,"POSITIVE","not.done",21,18
+"C146_negative","C146","asian","M",66,"yes.cabg","no","no","yes.T2","not.current","DN (bx or presumed)",NA,"NEGATIVE",NA,"NEGATIVE",NA,NA,NA
+"C82_positive_6","C82","other","F",60,"no","no","no","no","not.current","HTN/vascular","mild","mild",FALSE,"POSITIVE","cxr",6,6
+"C34_positive_7","C34","white","F",74,"no","no","no","no","not.current","Genetic","mild","mild",FALSE,"POSITIVE","cxr",7,7
+"C65_positive_13","C65","white","M",73,"yes.cabg","no","no","no","not.current","HTN/vascular","critical","severe",FALSE,"POSITIVE","cxr",13,8
+"C31_positive_18","C31","black","F",39,"no","no","no","no","never","GN/Autoimmune","mild","mild",FALSE,"POSITIVE","not.done",18,14
+"C63_positive_5","C63","black","M",45,"yes.stent","no","no","yes.T2","not.current","DN (bx or presumed)","moderate","moderate",FALSE,"POSITIVE","cxr",5,2
+"C132_positive_6","C132","asian","F",77,"yes.cabg","no","no","yes.T2","not.current","DN (bx or presumed)","moderate","moderate",FALSE,"POSITIVE","not.done",6,5
+"C36_positive_10","C36","asian","M",66,"yes.cabg","no","no","yes.T2","not.current","DN (bx or presumed)","moderate","mild",FALSE,"POSITIVE","cxr",10,2
+"C29_negative","C29","asian","M",66,"no","no","no","no","never","Unknown",NA,"NEGATIVE",NA,"NEGATIVE",NA,NA,NA
+"C128_positive_5","C128","asian","M",72,"unknown","no","no","yes.T2","not.current","DN (bx or presumed)","mild","mild",FALSE,"POSITIVE","not.done",5,2
+"C65_positive_9","C65","white","M",73,"yes.cabg","no","no","no","not.current","HTN/vascular","critical","moderate",FALSE,"POSITIVE","cxr",9,4
+"C21_positive_5","C21","white","M",80,"yes.stent","no","no","no","not.current","Other","critical","moderate",TRUE,"POSITIVE","cxr",5,4
+"C87_positive_9","C87","asian","M",71,"unknown","no","no","yes.T2","not.current","DN (bx or presumed)","mild","mild",FALSE,"POSITIVE","cxr",9,9
+"C37_positive_12","C37","asian","F",82,"no","no","no","yes.T2","never","DN (bx or presumed)","critical","critical",TRUE,"POSITIVE","cxr",12,5
+"C34_positive_0","C34","white","F",74,"no","no","no","no","not.current","Genetic","mild","mild",FALSE,"POSITIVE","cxr",0,0
+"C173_negative","C173","black","M",56,"no","no","no","no","not.current","GN/Autoimmune",NA,"NEGATIVE",NA,"NEGATIVE",NA,NA,NA
+"C139_negative","C139","white","M",85,"no","no","no","no","not.current","Unknown",NA,"NEGATIVE",NA,"NEGATIVE",NA,NA,NA
+"C20_positive_12","C20","asian","M",62,"yes.stent","no","no","yes.T2","not.current","DN (bx or presumed)","severe","moderate",FALSE,"POSITIVE","cxr",12,11
+"C48_positive_2","C48","other","M",72,"no","no","no","yes.T2","not.current","Other","critical","moderate",TRUE,"POSITIVE","cxr",2,0
+"C147_negative","C147","asian","M",53,"yes.stent","no","no","yes.T2","unknown","DN (bx or presumed)",NA,"NEGATIVE",NA,"NEGATIVE",NA,NA,NA
+"C48_positive_4","C48","other","M",72,"no","no","no","yes.T2","not.current","Other","critical","critical",TRUE,"POSITIVE","cxr",4,2
+"C140_negative","C140","asian","F",23,"no","no","no","no","not.current","Unknown",NA,"NEGATIVE",NA,"NEGATIVE",NA,NA,NA
+"C141_negative","C141","black","M",85,"yes.stent","no","no","no","not.current","Unknown",NA,"NEGATIVE",NA,"NEGATIVE",NA,NA,NA
+"C49_positive_7","C49","white","M",73,"yes.cabg","no","no","yes.T2","not.current","DN (bx or presumed)","critical","severe",TRUE,"POSITIVE","cxr",7,5
+"C113_positive_12","C113","white","F",61,"no","no","no","yes.T2","not.current","DN (bx or presumed)","severe","severe",FALSE,"POSITIVE","cxr",12,10
+"C82_positive_8","C82","other","F",60,"no","no","no","no","not.current","HTN/vascular","mild","mild",FALSE,"POSITIVE","cxr",8,8
+"C31_positive_4","C31","black","F",39,"no","no","no","no","never","GN/Autoimmune","mild","mild",FALSE,"POSITIVE","not.done",4,0
+"C65_positive_17","C65","white","M",73,"yes.cabg","no","no","no","not.current","HTN/vascular","critical","critical",FALSE,"POSITIVE","cxr",17,12
+"C9_positive_12","C9","other","M",55,"yes.cabg","no","no","yes.T2","current","DN (bx or presumed)","moderate","mild",FALSE,"POSITIVE","cxr",12,7
+"C187_negative","C187","other","M",70,"no","yes.pe","copd","yes.T2","not.current","DN (bx or presumed)",NA,"NEGATIVE",NA,"NEGATIVE",NA,NA,NA
+"C103_negative","C103","asian","M",66,"no","no","no","yes.T2","not.current","GN/Autoimmune",NA,"NEGATIVE",NA,"NEGATIVE",NA,NA,NA
+"C70_negative","C70","white","M",64,"no","no","no","no","not.current","Unknown",NA,"NEGATIVE",NA,"NEGATIVE",NA,NA,NA
+"C129_positive_3","C129","other","M",77,"yes.no.intervention","no","no","yes.T2","not.current","Other","mild","mild",FALSE,"POSITIVE","cxr",3,2
+"C40_positive_18","C40","black","M",57,"unknown","no","no","yes.T2","not.current","Other","critical","critical",FALSE,"POSITIVE","cxr",18,18
+"C101_negative","C101","asian","M",61,"yes.cabg","no","no","yes.T2","not.current","DN (bx or presumed)",NA,"NEGATIVE",NA,"NEGATIVE",NA,NA,NA
+"C66_positive_5","C66","black","F",60,"no","no","no","no","never","Unknown","critical","severe",TRUE,"POSITIVE","cxr",5,0
+"C212_negative","C212","white","M",49,"no","no","no","yes.T2","not.current","DN (bx or presumed)",NA,"NEGATIVE",NA,"NEGATIVE",NA,NA,NA
+"C168_negative","C168","asian","M",75,"no","no","no","yes.T2","not.current","DN (bx or presumed)",NA,"NEGATIVE",NA,"NEGATIVE",NA,NA,NA
+"C84_positive_3","C84","asian","M",75,"yes.cabg","no","no","yes.T2","not.current","DN (bx or presumed)","critical","moderate",TRUE,"POSITIVE","cxr",3,3
+"C21_positive_20","C21","white","M",80,"yes.stent","no","no","no","not.current","Other","critical","critical",TRUE,"POSITIVE","cxr",20,19
+"C21_positive_12","C21","white","M",80,"yes.stent","no","no","no","not.current","Other","critical","severe",TRUE,"POSITIVE","cxr",12,11
+"C167_negative","C167","asian","F",73,"no","no","no","yes.T2","not.current","DN (bx or presumed)",NA,"NEGATIVE",NA,"NEGATIVE",NA,NA,NA
+"C123_positive_12","C123","asian","M",66,"yes.stent","no","no","yes.T2","not.current","DN (bx or presumed)","severe","severe",FALSE,"POSITIVE","cxr",12,9
+"C57_positive_0","C57","asian","F",71,"no","yes.dvt","no","no","never","Unknown","critical","severe",TRUE,"POSITIVE","cxr",0,0
+"C124_positive_9","C124","asian","M",81,"yes.stent","no","no","no","not.current","DN (bx or presumed)","moderate","moderate",FALSE,"POSITIVE","cxr",9,4
+"C251_negative","C251","asian","M",41,"unknown","no","no","yes.T2","not.current","DN (bx or presumed)",NA,"NEGATIVE",NA,"NEGATIVE",NA,NA,NA
+"C60_positive_13","C60","white","M",80,"no","no","yes","yes.T2","not.current","DN (bx or presumed)","severe","moderate",FALSE,"POSITIVE","cxr",13,11
+"C257_negative","C257","asian","F",68,"no","no","no","no","not.current","HTN/vascular",NA,"NEGATIVE",NA,"NEGATIVE",NA,NA,NA
+"C238_negative","C238","black","F",39,"yes.stent","no","no","yes.T1","not.current","DN (bx or presumed)",NA,"NEGATIVE",NA,"NEGATIVE",NA,NA,NA
+"C36_positive_16","C36","asian","M",66,"yes.cabg","no","no","yes.T2","not.current","DN (bx or presumed)","moderate","mild",FALSE,"POSITIVE","cxr",16,8
+"C240_negative","C240","asian","M",62,"no","no","no","yes.T2","unknown","Unknown",NA,"NEGATIVE",NA,"NEGATIVE",NA,NA,NA
+"C126_positive_13","C126","asian","M",64,"no","no","no","no","never","Unknown","mild","mild",FALSE,"POSITIVE","not.done",13,13
+"C106_negative","C106","white","M",82,"unknown","no","no","yes.T2","not.current","DN (bx or presumed)",NA,"NEGATIVE",NA,"NEGATIVE",NA,NA,NA
+"C224_negative","C224","asian","M",69,"yes.stent","no","no","yes.T2","not.current","DN (bx or presumed)",NA,"NEGATIVE",NA,"NEGATIVE",NA,NA,NA
+"C113_positive_19","C113","white","F",61,"no","no","no","yes.T2","not.current","DN (bx or presumed)","severe","moderate",FALSE,"POSITIVE","cxr",19,17
+"C195_negative","C195","other","M",86,"yes.cabg","no","no","no","not.current","Other",NA,"NEGATIVE",NA,"NEGATIVE",NA,NA,NA
+"C237_negative","C237","asian","M",72,"yes.stent","no","no","yes.T2","not.current","DN (bx or presumed)",NA,"NEGATIVE",NA,"NEGATIVE",NA,NA,NA
+"C93_positive_13","C93","white","M",87,"unknown","no","no","yes.T2","not.current","Unknown","moderate","moderate",FALSE,"POSITIVE","cxr",13,13
+"C137_negative","C137","asian","F",60,"no","no","no","yes.T2","not.current","DN (bx or presumed)",NA,"NEGATIVE",NA,"NEGATIVE",NA,NA,NA
+"C77_positive_11","C77","white","F",64,"no","no","no","no","not.current","Unknown","critical","moderate",TRUE,"POSITIVE","cxr",11,7
+"C166_negative","C166","white","M",78,"no","no","no","no","not.current","Other",NA,"NEGATIVE",NA,"NEGATIVE",NA,NA,NA
+"C197_negative","C197","black","F",62,"unknown","no","no","yes.T2","not.current","DN (bx or presumed)",NA,"NEGATIVE",NA,"NEGATIVE",NA,NA,NA
+"C130_negative","C130","other","M",71,"no","no","yes","no","not.current","Unknown",NA,"NEGATIVE",NA,"NEGATIVE",NA,NA,NA
+"C246_negative","C246","white","M",71,"unknown","no","no","yes.T2","not.current","DN (bx or presumed)",NA,"NEGATIVE",NA,"NEGATIVE",NA,NA,NA
+"C20_positive_14","C20","asian","M",62,"yes.stent","no","no","yes.T2","not.current","DN (bx or presumed)","severe","mild",FALSE,"POSITIVE","cxr",14,13
+"C123_positive_7","C123","asian","M",66,"yes.stent","no","no","yes.T2","not.current","DN (bx or presumed)","severe","severe",FALSE,"POSITIVE","cxr",7,4
+"C110_positive_2","C110","black","M",74,"no","no","no","no","never","Unknown","moderate","moderate",FALSE,"POSITIVE","cxr",2,2
+"C126_positive_2","C126","asian","M",64,"no","no","no","no","never","Unknown","mild","mild",FALSE,"POSITIVE","not.done",2,2
+"C42_positive_2","C42","white","M",40,"no","no","no","yes.T2","never","DN (bx or presumed)","moderate","moderate",FALSE,"POSITIVE","not.done",2,0
+"C60_positive_9","C60","white","M",80,"no","no","yes","yes.T2","not.current","DN (bx or presumed)","severe","moderate",FALSE,"POSITIVE","cxr",9,7
+"C34_positive_11","C34","white","F",74,"no","no","no","no","not.current","Genetic","mild","mild",FALSE,"POSITIVE","cxr",11,11
+"C214_negative","C214","white","F",68,"yes.no.intervention","no","no","no","not.current","Genetic",NA,"NEGATIVE",NA,"NEGATIVE",NA,NA,NA
+"C36_positive_12","C36","asian","M",66,"yes.cabg","no","no","yes.T2","not.current","DN (bx or presumed)","moderate","mild",FALSE,"POSITIVE","cxr",12,4
+"C67_positive_3","C67","other","F",75,"no","no","no","no","never","Unknown","moderate","moderate",FALSE,"POSITIVE","cxr",3,2
+"C164_negative","C164","asian","M",78,"no","no","no","yes.T2","not.current","DN (bx or presumed)",NA,"NEGATIVE",NA,"NEGATIVE",NA,NA,NA
+"C27_positive_6","C27","asian","M",85,"no","no","no","no","never","HTN/vascular","mild","mild",FALSE,"POSITIVE","cxr",6,5
+"C42_positive_14","C42","white","M",40,"no","no","no","yes.T2","never","DN (bx or presumed)","moderate","mild",FALSE,"POSITIVE","not.done",14,12
+"C31_positive_11","C31","black","F",39,"no","no","no","no","never","GN/Autoimmune","mild","mild",FALSE,"POSITIVE","not.done",11,7
+"C58_negative","C58","white","F",72,"unknown","no","no","no","not.current","DN (bx or presumed)",NA,"NEGATIVE",NA,"NEGATIVE",NA,NA,NA
+"C116_positive_9","C116","white","M",87,"yes.no.intervention","no","no","no","not.current","GN/Autoimmune","critical","mild",FALSE,"POSITIVE","cxr",9,8
+"C93_positive_20","C93","white","M",87,"unknown","no","no","yes.T2","not.current","Unknown","moderate","mild",FALSE,"POSITIVE","cxr",20,20
+"C69_negative","C69","asian","M",79,"yes.no.intervention","no","no","no","not.current","Unknown",NA,"NEGATIVE",NA,"NEGATIVE",NA,NA,NA
+"C241_negative","C241","black","M",65,"no","no","no","no","not.current","HTN/vascular",NA,"NEGATIVE",NA,"NEGATIVE",NA,NA,NA
+"C190_negative","C190","white","M",54,"no","no","no","yes.T2","not.current","DN (bx or presumed)",NA,"NEGATIVE",NA,"NEGATIVE",NA,NA,NA
+"C40_positive_2","C40","black","M",57,"unknown","no","no","yes.T2","not.current","Other","critical","mild",FALSE,"POSITIVE","cxr",2,2
+"C189_negative","C189","black","M",55,"no","no","no","no","ex","HTN/vascular",NA,"NEGATIVE",NA,"NEGATIVE",NA,NA,NA
+"C234_negative","C234","asian","F",74,"yes.cabg","no","no","yes.T2","not.current","DN (bx or presumed)",NA,"NEGATIVE",NA,"NEGATIVE",NA,NA,NA
+"C63_positive_12","C63","black","M",45,"yes.stent","no","no","yes.T2","not.current","DN (bx or presumed)","moderate","mild",FALSE,"POSITIVE","cxr",12,9
+"C113_positive_6","C113","white","F",61,"no","no","no","yes.T2","not.current","DN (bx or presumed)","severe","severe",FALSE,"POSITIVE","cxr",6,4
+"C64_negative","C64","asian","M",61,"yes.stent","no","no","yes.T2","not.current","DN (bx or presumed)",NA,"NEGATIVE",NA,"NEGATIVE",NA,NA,NA
+"C128_positive_14","C128","asian","M",72,"unknown","no","no","yes.T2","not.current","DN (bx or presumed)","mild","mild",FALSE,"POSITIVE","not.done",14,11
+"C73_positive_11","C73","white","M",88,"yes.stent","no","no","yes.T2","not.current","DN (bx or presumed)","severe","mild",FALSE,"POSITIVE","cxr",11,7
+"C138_negative","C138","asian","F",77,"no","no","no","yes.T2","not.current","DN (bx or presumed)",NA,"NEGATIVE",NA,"NEGATIVE",NA,NA,NA
+"C87_positive_2","C87","asian","M",71,"unknown","no","no","yes.T2","not.current","DN (bx or presumed)","mild","mild",FALSE,"POSITIVE","cxr",2,2
+"C116_positive_13","C116","white","M",87,"yes.no.intervention","no","no","no","not.current","GN/Autoimmune","critical","critical",FALSE,"POSITIVE","cxr",13,12
+"C42_positive_9","C42","white","M",40,"no","no","no","yes.T2","never","DN (bx or presumed)","moderate","mild",FALSE,"POSITIVE","not.done",9,7
+"C134_negative","C134","black","F",74,"yes.stent","no","no","no","not.current","HTN/vascular",NA,"NEGATIVE",NA,"NEGATIVE",NA,NA,NA
+"C47_positive_9","C47","white","M",72,"yes.no.intervention","no","no","no","not.current","Other","mild","mild",FALSE,"POSITIVE","cxr",9,7
+"C242_negative","C242","other","M",59,"no","yes.other","no","no","not.current","GN/Autoimmune",NA,"NEGATIVE",NA,"NEGATIVE",NA,NA,NA
+"C108_negative","C108","white","F",79,"no","no","bi","no","not.current","GN/Autoimmune",NA,"NEGATIVE",NA,"NEGATIVE",NA,NA,NA
+"C152_negative","C152","other","M",76,"no","no","no","yes.T2","not.current","DN (bx or presumed)",NA,"NEGATIVE",NA,"NEGATIVE",NA,NA,NA
+"C23_positive_8","C23","asian","F",78,"yes.no.intervention","no","no","yes.T2","never","DN (bx or presumed)","moderate","moderate",FALSE,"POSITIVE","cxr",8,7
+"C127_positive_5","C127","other","F",69,"yes.cabg","no","no","yes.T2","never","DN (bx or presumed)","moderate","moderate",FALSE,"POSITIVE","cxr",5,2
+"C10_positive_18","C10","black","F",84,"yes.no.intervention","no","no","yes.T2","not.current","DN (bx or presumed)","severe","moderate",FALSE,"POSITIVE","cxr",18,18
+"C10_positive_21","C10","black","F",84,"yes.no.intervention","no","no","yes.T2","not.current","DN (bx or presumed)","severe","moderate",FALSE,"POSITIVE","cxr",21,21
+"C10_positive_30","C10","black","F",84,"yes.no.intervention","no","no","yes.T2","not.current","DN (bx or presumed)","severe","mild",FALSE,"POSITIVE","cxr",30,30
+"C105_negative","C105","asian","F",75,"yes.stent","no","yes","yes.T2","not.current","DN (bx or presumed)",NA,"NEGATIVE",FALSE,"NEGATIVE","not.done",-4,-7
+"C11_positive_13","C11","white","M",62,"no","no","no","yes.T2","not.current","GN/Autoimmune","severe","moderate",FALSE,"POSITIVE","cxr",NA,13
+"C11_positive_17","C11","white","M",62,"no","no","no","yes.T2","not.current","GN/Autoimmune","severe","moderate",FALSE,"POSITIVE","cxr",NA,17
+"C11_positive_19","C11","white","M",62,"no","no","no","yes.T2","not.current","GN/Autoimmune","severe","moderate",FALSE,"POSITIVE","cxr",NA,19
+"C11_positive_21","C11","white","M",62,"no","no","no","yes.T2","not.current","GN/Autoimmune","severe","mild",FALSE,"POSITIVE","cxr",NA,21
+"C110_positive_11","C110","black","M",74,"no","no","no","no","never","Unknown","moderate","mild",FALSE,"POSITIVE","cxr",11,11
+"C110_positive_14","C110","black","M",74,"no","no","no","no","never","Unknown","moderate","mild",FALSE,"POSITIVE","cxr",14,14
+"C110_positive_4","C110","black","M",74,"no","no","no","no","never","Unknown","moderate","moderate",FALSE,"POSITIVE","cxr",4,4
+"C113_positive_27","C113","white","F",61,"no","no","no","yes.T2","not.current","DN (bx or presumed)","severe","mild",FALSE,"POSITIVE","cxr",27,25
+"C114_positive_13","C114","asian","M",68,"yes.stent","no","no","yes.T2","not.current","DN (bx or presumed)","severe","moderate",FALSE,"POSITIVE","cxr",13,12
+"C114_positive_16","C114","asian","M",68,"yes.stent","no","no","yes.T2","not.current","DN (bx or presumed)","severe","moderate",FALSE,"POSITIVE","cxr",16,15
+"C114_positive_24","C114","asian","M",68,"yes.stent","no","no","yes.T2","not.current","DN (bx or presumed)","severe","mild",FALSE,"POSITIVE","cxr",24,23
+"C114_positive_27","C114","asian","M",68,"yes.stent","no","no","yes.T2","not.current","DN (bx or presumed)","severe","mild",FALSE,"POSITIVE","cxr",27,26
+"C114_positive_31","C114","asian","M",68,"yes.stent","no","no","yes.T2","not.current","DN (bx or presumed)","severe","mild",FALSE,"POSITIVE","cxr",31,30
+"C114_positive_5","C114","asian","M",68,"yes.stent","no","no","yes.T2","not.current","DN (bx or presumed)","severe","moderate",FALSE,"POSITIVE","cxr",5,4
+"C114_positive_9","C114","asian","M",68,"yes.stent","no","no","yes.T2","not.current","DN (bx or presumed)","severe","severe",FALSE,"POSITIVE","cxr",9,8
+"C116_positive_16","C116","white","M",87,"yes.no.intervention","no","no","no","not.current","GN/Autoimmune","critical","moderate",FALSE,"POSITIVE","cxr",16,15
+"C116_positive_26","C116","white","M",87,"yes.no.intervention","no","no","no","not.current","GN/Autoimmune","critical","moderate",FALSE,"POSITIVE","cxr",26,25
+"C12_positive_11","C12","asian","M",58,"yes.stent","no","no","yes.T2","not.current","DN (bx or presumed)","severe","severe",FALSE,"POSITIVE","cxr",11,8
+"C12_positive_17","C12","asian","M",58,"yes.stent","no","no","yes.T2","not.current","DN (bx or presumed)","severe","moderate",FALSE,"POSITIVE","cxr",17,14
+"C12_positive_19","C12","asian","M",58,"yes.stent","no","no","yes.T2","not.current","DN (bx or presumed)","severe","mild",FALSE,"POSITIVE","cxr",19,16
+"C12_positive_22","C12","asian","M",58,"yes.stent","no","no","yes.T2","not.current","DN (bx or presumed)","severe","mild",FALSE,"POSITIVE","cxr",22,19
+"C12_positive_24","C12","asian","M",58,"yes.stent","no","no","yes.T2","not.current","DN (bx or presumed)","severe","mild",FALSE,"POSITIVE","cxr",24,21
+"C123_positive_25","C123","asian","M",66,"yes.stent","no","no","yes.T2","not.current","DN (bx or presumed)","severe","moderate",FALSE,"POSITIVE","cxr",25,22
+"C123_positive_35","C123","asian","M",66,"yes.stent","no","no","yes.T2","not.current","DN (bx or presumed)","severe","mild",FALSE,"POSITIVE","cxr",35,32
+"C123_positive_10","C123","asian","M",66,"yes.stent","no","no","yes.T2","not.current","DN (bx or presumed)","severe","severe",FALSE,"POSITIVE","cxr",10,7
+"C126_positive_9","C126","asian","M",64,"no","no","no","no","never","Unknown","mild","mild",FALSE,"POSITIVE","not.done",9,9
+"C126_positive_11","C126","asian","M",64,"no","no","no","no","never","Unknown","mild","mild",FALSE,"POSITIVE","not.done",11,11
+"C126_positive_5","C126","asian","M",64,"no","no","no","no","never","Unknown","mild","mild",FALSE,"POSITIVE","not.done",5,5
+"C127_positive_11","C127","other","F",69,"yes.cabg","no","no","yes.T2","never","DN (bx or presumed)","moderate","moderate",FALSE,"POSITIVE","cxr",11,8
+"C127_positive_16","C127","other","F",69,"yes.cabg","no","no","yes.T2","never","DN (bx or presumed)","moderate","moderate",FALSE,"POSITIVE","cxr",16,13
+"C127_positive_23","C127","other","F",69,"yes.cabg","no","no","yes.T2","never","DN (bx or presumed)","moderate","mild",FALSE,"POSITIVE","cxr",23,20
+"C128_positive_16","C128","asian","M",72,"unknown","no","no","yes.T2","not.current","DN (bx or presumed)","mild","mild",FALSE,"POSITIVE","not.done",16,13
+"C128_positive_23","C128","asian","M",72,"unknown","no","no","yes.T2","not.current","DN (bx or presumed)","mild","mild",FALSE,"POSITIVE","not.done",23,20
+"C129_positive_13","C129","other","M",77,"yes.no.intervention","no","no","yes.T2","not.current","Other","mild","mild",FALSE,"POSITIVE","cxr",13,12
+"C129_positive_6","C129","other","M",77,"yes.no.intervention","no","no","yes.T2","not.current","Other","mild","mild",FALSE,"POSITIVE","cxr",6,5
+"C129_positive_8","C129","other","M",77,"yes.no.intervention","no","no","yes.T2","not.current","Other","mild","mild",FALSE,"POSITIVE","cxr",8,7
+"C132_positive_12","C132","asian","F",77,"yes.cabg","no","no","yes.T2","not.current","DN (bx or presumed)","moderate","mild",FALSE,"POSITIVE","not.done",12,11
+"C132_positive_14","C132","asian","F",77,"yes.cabg","no","no","yes.T2","not.current","DN (bx or presumed)","moderate","mild",FALSE,"POSITIVE","not.done",14,13
+"C132_positive_8","C132","asian","F",77,"yes.cabg","no","no","yes.T2","not.current","DN (bx or presumed)","moderate","moderate",FALSE,"POSITIVE","not.done",8,7
+"C105_positive_5","C105","asian","F",75,"yes.stent","no","yes","yes.T2","not.current","DN (bx or presumed)","mild","mild",FALSE,"POSITIVE","not.done",5,2
+"C105_positive_8","C105","asian","F",75,"yes.stent","no","yes","yes.T2","not.current","DN (bx or presumed)","mild","mild",FALSE,"POSITIVE","not.done",8,5
+"C105_positive_10","C105","asian","F",75,"yes.stent","no","yes","yes.T2","not.current","DN (bx or presumed)","mild","mild",FALSE,"POSITIVE","not.done",10,7
+"C105_positive_15","C105","asian","F",75,"yes.stent","no","yes","yes.T2","not.current","DN (bx or presumed)","mild","mild",FALSE,"POSITIVE","not.done",15,12
+"C105_positive_17","C105","asian","F",75,"yes.stent","no","yes","yes.T2","not.current","DN (bx or presumed)","mild","mild",FALSE,"POSITIVE","not.done",17,14
+"C105_positive_3","C105","asian","F",75,"yes.stent","no","yes","yes.T2","not.current","DN (bx or presumed)","mild","mild",FALSE,"POSITIVE","not.done",3,0
+"C149_positive_14","C149","white","M",76,"no","no","no","no","not.current","Other","mild","mild",FALSE,"POSITIVE","cxr",14,14
+"C149_positive_3","C149","white","M",76,"no","no","no","no","not.current","Other","mild","mild",FALSE,"POSITIVE","cxr",3,3
+"C153_negative","C153","asian","M",50,"no","no","no","yes.T2","not.current","DN (bx or presumed)",NA,"NEGATIVE",NA,"NEGATIVE",NA,NA,NA
+"C162_negative","C162","white","M",62,"no","no","no","no","not.current","DN (bx or presumed)",NA,"NEGATIVE",NA,"NEGATIVE",NA,NA,NA
+"C170_negative","C170","asian","M",82,"no","no","no","yes.T2","not.current","Other",NA,"NEGATIVE",NA,"NEGATIVE",NA,NA,NA
+"C18_positive_14","C18","asian","M",64,"no","no","no","no","not.current","Unknown","severe","moderate",FALSE,"POSITIVE","cxr",9,14
+"C18_positive_15","C18","asian","M",64,"no","no","no","no","not.current","Unknown","severe","moderate",FALSE,"POSITIVE","cxr",10,15
+"C18_positive_17","C18","asian","M",64,"no","no","no","no","not.current","Unknown","severe","mild",FALSE,"POSITIVE","cxr",12,17
+"C18_positive_19","C18","asian","M",64,"no","no","no","no","not.current","Unknown","severe","mild",FALSE,"POSITIVE","cxr",14,19
+"C180_negative","C180","asian","M",48,"yes.cabg","no","no","no","not.current","GN/Autoimmune",NA,"NEGATIVE",NA,"NEGATIVE",NA,NA,NA
+"C20_positive_16","C20","asian","M",62,"yes.stent","no","no","yes.T2","not.current","DN (bx or presumed)","severe","mild",FALSE,"POSITIVE","cxr",16,15
+"C201_negative","C201","black","M",56,"no","no","no","no","not.current","HTN/vascular",NA,"NEGATIVE",NA,"NEGATIVE",NA,NA,NA
+"C21_positive_26","C21","white","M",80,"yes.stent","no","no","no","not.current","Other","critical","critical",TRUE,"POSITIVE","cxr",26,25
+"C21_positive_10","C21","white","M",80,"yes.stent","no","no","no","not.current","Other","critical","severe",TRUE,"POSITIVE","cxr",10,9
+"C21_positive_16","C21","white","M",80,"yes.stent","no","no","no","not.current","Other","critical","critical",TRUE,"POSITIVE","cxr",16,15
+"C22_positive_8","C22","asian","M",65,"yes.no.intervention","no","no","yes.T2","not.current","DN (bx or presumed)","mild","mild",FALSE,"POSITIVE","cxr",8,8
+"C22_positive_11","C22","asian","M",65,"yes.no.intervention","no","no","yes.T2","not.current","DN (bx or presumed)","mild","mild",FALSE,"POSITIVE","cxr",11,11
+"C22_positive_13","C22","asian","M",65,"yes.no.intervention","no","no","yes.T2","not.current","DN (bx or presumed)","mild","mild",FALSE,"POSITIVE","cxr",13,13
+"C24_positive_8","C24","white","F",75,"yes.no.intervention","no","no","no","not.current","HTN/vascular","mild","mild",FALSE,"POSITIVE","cxr",NA,8
+"C24_positive_11","C24","white","F",75,"yes.no.intervention","no","no","no","not.current","HTN/vascular","mild","mild",FALSE,"POSITIVE","cxr",NA,11
+"C24_positive_13","C24","white","F",75,"yes.no.intervention","no","no","no","not.current","HTN/vascular","mild","mild",FALSE,"POSITIVE","cxr",NA,13
+"C245_negative","C245","asian","M",62,"no","no","no","no","not.current","HTN/vascular",NA,"NEGATIVE",NA,"NEGATIVE",NA,NA,NA
+"C25_positive_14","C25","black","M",38,"no","no","no","yes.T1","unknown","DN","moderate","mild",FALSE,"POSITIVE","cxr",14,14
+"C25_positive_16","C25","black","M",38,"no","no","no","yes.T1","unknown","DN","moderate","mild",FALSE,"POSITIVE","cxr",16,16
+"C25_positive_18","C25","black","M",38,"no","no","no","yes.T1","unknown","DN","moderate","mild",FALSE,"POSITIVE","cxr",18,18
+"C27_positive_8","C27","asian","M",85,"no","no","no","no","never","HTN/vascular","mild","mild",FALSE,"POSITIVE","cxr",8,7
+"C31_positive_8","C31","black","F",39,"no","no","no","no","never","GN/Autoimmune","mild","mild",FALSE,"POSITIVE","not.done",8,4
+"C31_positive_13","C31","black","F",39,"no","no","no","no","never","GN/Autoimmune","mild","mild",FALSE,"POSITIVE","not.done",13,9
+"C31_positive_15","C31","black","F",39,"no","no","no","no","never","GN/Autoimmune","mild","mild",FALSE,"POSITIVE","not.done",15,11
+"C32_positive_16","C32","white","M",76,"no","no","no","no","not.current","Unknown","critical","critical",TRUE,"POSITIVE","cxr",NA,16
+"C34_positive_9","C34","white","F",74,"no","no","no","no","not.current","Genetic","mild","mild",FALSE,"POSITIVE","cxr",9,9
+"C40_positive_21","C40","black","M",57,"unknown","no","no","yes.T2","not.current","Other","critical","severe",FALSE,"POSITIVE","cxr",21,21
+"C40_positive_31","C40","black","M",57,"unknown","no","no","yes.T2","not.current","Other","critical","mild",FALSE,"POSITIVE","cxr",31,31
+"C40_positive_11","C40","black","M",57,"unknown","no","no","yes.T2","not.current","Other","critical","moderate",FALSE,"POSITIVE","cxr",11,11
+"C40_positive_14","C40","black","M",57,"unknown","no","no","yes.T2","not.current","Other","critical","moderate",FALSE,"POSITIVE","cxr",14,14
+"C42_positive_4","C42","white","M",40,"no","no","no","yes.T2","never","DN (bx or presumed)","moderate","moderate",FALSE,"POSITIVE","not.done",4,2
+"C42_positive_7","C42","white","M",40,"no","no","no","yes.T2","never","DN (bx or presumed)","moderate","mild",FALSE,"POSITIVE","not.done",7,5
+"C47_positive_13","C47","white","M",72,"yes.no.intervention","no","no","no","not.current","Other","mild","mild",FALSE,"POSITIVE","cxr",13,11
+"C47_positive_18","C47","white","M",72,"yes.no.intervention","no","no","no","not.current","Other","mild","mild",FALSE,"POSITIVE","cxr",18,16
+"C50_positive_14","C50","asian","M",66,"no","no","no","yes.T2","not.current","DN (bx or presumed)","severe","severe",FALSE,"POSITIVE","cxr",14,13
+"C50_positive_16","C50","asian","M",66,"no","no","no","yes.T2","not.current","DN (bx or presumed)","severe","moderate",FALSE,"POSITIVE","cxr",16,15
+"C50_positive_19","C50","asian","M",66,"no","no","no","yes.T2","not.current","DN (bx or presumed)","severe","severe",FALSE,"POSITIVE","cxr",19,18
+"C50_positive_23","C50","asian","M",66,"no","no","no","yes.T2","not.current","DN (bx or presumed)","severe","moderate",FALSE,"POSITIVE","cxr",23,22
+"C59_positive_12","C59","asian","M",47,"no","no","no","no","not.current","HTN/vascular","severe","mild",FALSE,"POSITIVE","not.done",12,11
+"C59_positive_16","C59","asian","M",47,"no","no","no","no","not.current","HTN/vascular","severe","mild",FALSE,"POSITIVE","not.done",16,15
+"C60_positive_29","C60","white","M",80,"no","no","yes","yes.T2","not.current","DN (bx or presumed)","severe","moderate",FALSE,"POSITIVE","cxr",29,27
+"C60_positive_33","C60","white","M",80,"no","no","yes","yes.T2","not.current","DN (bx or presumed)","severe","moderate",FALSE,"POSITIVE","cxr",33,31
+"C60_positive_37","C60","white","M",80,"no","no","yes","yes.T2","not.current","DN (bx or presumed)","severe","moderate",FALSE,"POSITIVE","cxr",37,35
+"C60_positive_11","C60","white","M",80,"no","no","yes","yes.T2","not.current","DN (bx or presumed)","severe","moderate",FALSE,"POSITIVE","cxr",11,9
+"C63_positive_8","C63","black","M",45,"yes.stent","no","no","yes.T2","not.current","DN (bx or presumed)","moderate","moderate",FALSE,"POSITIVE","cxr",8,5
+"C63_positive_15","C63","black","M",45,"yes.stent","no","no","yes.T2","not.current","DN (bx or presumed)","moderate","mild",FALSE,"POSITIVE","cxr",15,12
+"C65_positive_23","C65","white","M",73,"yes.cabg","no","no","no","not.current","HTN/vascular","critical","critical",FALSE,"POSITIVE","cxr",23,18
+"C65_positive_27","C65","white","M",73,"yes.cabg","no","no","no","not.current","HTN/vascular","critical","critical",FALSE,"POSITIVE","cxr",27,22
+"C65_positive_36","C65","white","M",73,"yes.cabg","no","no","no","not.current","HTN/vascular","critical","severe",FALSE,"POSITIVE","cxr",36,31
+"C65_positive_15","C65","white","M",73,"yes.cabg","no","no","no","not.current","HTN/vascular","critical","critical",FALSE,"POSITIVE","cxr",15,10
+"C65_positive_20","C65","white","M",73,"yes.cabg","no","no","no","not.current","HTN/vascular","critical","severe",FALSE,"POSITIVE","cxr",20,15
+"C7_positive_9","C7","black","M",83,"no","no","no","yes.T2","not.current","Other","mild","mild",FALSE,"POSITIVE","cxr",9,9
+"C7_positive_11","C7","black","M",83,"no","no","no","yes.T2","not.current","Other","mild","mild",FALSE,"POSITIVE","cxr",11,11
+"C73_positive_9","C73","white","M",88,"yes.stent","no","no","yes.T2","not.current","DN (bx or presumed)","severe","moderate",FALSE,"POSITIVE","cxr",9,5
+"C80_positive_16","C80","asian","F",69,"no","no","no","yes.T2","never","DN (bx or presumed)","moderate","mild",FALSE,"POSITIVE","cxr",16,14
+"C87_positive_11","C87","asian","M",71,"unknown","no","no","yes.T2","not.current","DN (bx or presumed)","mild","mild",FALSE,"POSITIVE","cxr",11,11
+"C9_positive_17","C9","other","M",55,"yes.cabg","no","no","yes.T2","current","DN (bx or presumed)","moderate","mild",FALSE,"POSITIVE","cxr",17,12
+"C93_positive_10","C93","white","M",87,"unknown","no","no","yes.T2","not.current","Unknown","moderate","mild",FALSE,"POSITIVE","cxr",10,10
+"C93_positive_15","C93","white","M",87,"unknown","no","no","yes.T2","not.current","Unknown","moderate","mild",FALSE,"POSITIVE","cxr",15,15
+"C99_positive_13","C99","white","M",60,"yes.cabg","no","no","yes.T2","not.current","DN (bx or presumed)","critical","critical",FALSE,"POSITIVE","cxr",13,3
+"C99_positive_16","C99","white","M",60,"yes.cabg","no","no","yes.T2","not.current","DN (bx or presumed)","critical","severe",FALSE,"POSITIVE","cxr",16,6
