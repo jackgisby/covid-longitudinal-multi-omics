@@ -39,7 +39,7 @@ get_summarized_experiment <- function(
     counts <- counts[,-1]
     
     # remove duplicate ensembl IDs
-    counts <- counts[!duplicated(ensembl_ids),]
+    counts <- counts[!duplicated(ensembl_ids) ,]
     gencode_ids <- gencode_ids[!duplicated(ensembl_ids)]
     ensembl_ids <- ensembl_ids[!duplicated(ensembl_ids)]
     rownames(counts) <- ensembl_ids
@@ -50,19 +50,19 @@ get_summarized_experiment <- function(
     }
     
     ensembl_to_geneid <- getBM(filters="ensembl_gene_id", attributes=c("ensembl_gene_id","hgnc_symbol"), values=ensembl_ids, mart=mart)
-    ensembl_to_geneid <- ensembl_to_geneid[!duplicated(ensembl_to_geneid$ensembl_gene_id),]
+    ensembl_to_geneid <- ensembl_to_geneid[which(!duplicated(ensembl_to_geneid$ensembl_gene_id)) ,]
     
     count_row_names_joined <- dplyr::left_join(data.frame(gencode_id=gencode_ids, ensembl_id=ensembl_ids), ensembl_to_geneid, by = c("ensembl_id"="ensembl_gene_id"))
     colnames(count_row_names_joined) <- c("gencode_id", "ensembl_id", "gene_id")
     
-    count_row_names_joined$gene_id[count_row_names_joined$gene_id == ""] <- count_row_names_joined$ensembl_id[count_row_names_joined$gene_id == ""]
+    count_row_names_joined$gene_id[which(count_row_names_joined$gene_id == "" | is.na(count_row_names_joined$gene_id))] <- count_row_names_joined$ensembl_id[which(count_row_names_joined$gene_id == "" | is.na(count_row_names_joined$gene_id))]
     
     # incorrect sample naming
-    colnames(counts) <- gsub("C133","C105", gsub("\\.", "_", gsub("CC", "C", gsub("HC", "", colnames(counts)))))
+    colnames(counts) <- gsub("C133", "C105", gsub("\\.", "_", gsub("CC", "C", gsub("HC", "", colnames(counts)))))
     
     # setup the metadata
     counts_coldata <- data.frame(fread(metadata_path))
-    
+
     # subset the counts by the metadata
     counts <- counts[,colnames(counts) %in% counts_coldata$sample_id]
     counts_coldata <- counts_coldata[counts_coldata$sample_id %in% colnames(counts),]
@@ -82,19 +82,24 @@ get_summarized_experiment <- function(
     # create a new time column
     colnames(colData(se_object)) <- gsub("date_positive_swab", "date_first_positive_swab", colnames(colData(se_object)))
     
-    se_object$time_from_first_positive_swab <- as.numeric(
-        as.Date(se_object$sample_date, format = "%d/%m/%Y") -
-        as.Date(se_object$date_first_positive_swab, format = "%d/%m/%Y")
-    )
+    if (!("time_from_first_positive_swab" %in% colnames(colData(se_object)))) {
+        se_object$time_from_first_positive_swab <- as.numeric(
+            as.Date(se_object$sample_date, format = "%d/%m/%Y") -
+                as.Date(se_object$date_first_positive_swab, format = "%d/%m/%Y")
+        )
+    }
+
+    if (!("time_from_first_symptoms" %in% colnames(colData(se_object)))) {
+        se_object$time_from_first_symptoms <- as.numeric(
+            as.Date(se_object$sample_date, format = "%d/%m/%Y") -
+                as.Date(se_object$date_first_symptoms, format = "%d/%m/%Y")
+        )
+        
+        se_object$date_first_x <- se_object$date_first_symptoms
+    }
     
-    se_object$time_from_first_symptoms <- as.numeric(
-        as.Date(se_object$sample_date, format = "%d/%m/%Y") -
-        as.Date(se_object$date_first_symptoms, format = "%d/%m/%Y")
-    )
-    
-    se_object$date_first_x <- se_object$date_first_symptoms
     se_object$time_from_first_x <- se_object$time_from_first_symptoms
-    
+
     for (i in 1:length(se_object$time_from_first_symptoms)) {
         
         if (is.na(se_object$time_from_first_symptoms[i])) {
@@ -116,11 +121,12 @@ get_summarized_experiment <- function(
         
         if (max_time == "swab") {
             
-            se_object$date_first_x[i] <- se_object$date_first_positive_swab[i]
+            # se_object$date_first_x[i] <- se_object$date_first_positive_swab[i]
             se_object$time_from_first_x[i] <- se_object$time_from_first_positive_swab[i]
             
         } else {
-            se_object$date_first_x[i] <- se_object$date_first_symptoms[i]
+            
+            # se_object$date_first_x[i] <- se_object$date_first_symptoms[i]
             se_object$time_from_first_x[i] <- se_object$time_from_first_symptoms[i]
         }
     }
@@ -212,8 +218,8 @@ normalize_se <- function(
     normalisation_level="pre_dream", 
     group = NULL, 
     log_transform = TRUE,
-    variance_filter_cutoff=1000,
-    variance_filter_method="MAD",
+    variance_filter_cutoff = 1000,
+    variance_filter_method = "MAD",
     filter_by_expr = TRUE
 ) {
     # keep highly expressed genes
@@ -260,7 +266,7 @@ normalize_se <- function(
     # figure out which genes to keep based on variability (default is mean absolute deviation)
     ff_keep <- rownames(M3C::featurefilter(assay(se, 2), percentile = variance_filter_cutoff, method=variance_filter_method, topN = 5)[[1]])
     ff_keep <- rownames(se) %in% ff_keep
-    se <- se[ff_keep,]
+    se <- se[ff_keep, ]
     
     message(paste0(sum(ff_keep), " out of ", length(ff_keep), " genes kept after featurefilter"))
     
@@ -301,7 +307,7 @@ get_soma_data <- function(soma_abundance, sample_meta, sample_technical_meta, fe
     sample_technical_meta <- sample_technical_meta[sample_technical_meta$sample_id %in% w_metadata$sample_id,]
     
     combined_meta <- dplyr::left_join(sample_technical_meta, w_metadata, by = c("sample_id" = "sample_id", "individual_id" = "individual_id"))
-    
+
     soma_abundance <- soma_abundance[rownames(soma_abundance) %in% combined_meta$sample_id,]
     
     if (!normalise_together) {
@@ -311,19 +317,25 @@ get_soma_data <- function(soma_abundance, sample_meta, sample_technical_meta, fe
         }
     }
     
-    colnames(combined_meta) <- gsub("date_positive_swab", "date_first_positive_swab", colnames(combined_meta))
+    if (!("time_from_first_positive_swab" %in% colnames(combined_meta))) {
+        
+        colnames(combined_meta) <- gsub("date_positive_swab", "date_first_positive_swab", colnames(combined_meta))
+        
+        combined_meta$time_from_first_positive_swab <- as.numeric(
+            as.Date(combined_meta$sample_date, format = "%d/%m/%Y") -
+                as.Date(combined_meta$date_first_positive_swab, format = "%d/%m/%Y")
+        )
+    }
     
-    combined_meta$time_from_first_positive_swab <- as.numeric(
-        as.Date(combined_meta$sample_date, format = "%d/%m/%Y") -
-            as.Date(combined_meta$date_first_positive_swab, format = "%d/%m/%Y")
-    )
+    if (!("time_from_first_symptoms" %in% colnames(combined_meta))) {
+        combined_meta$time_from_first_symptoms <- as.numeric(
+            as.Date(combined_meta$sample_date, format = "%d/%m/%Y") -
+                as.Date(combined_meta$date_first_symptoms, format = "%d/%m/%Y")
+        )
+        
+        combined_meta$date_first_x <- combined_meta$date_first_symptoms
+    }
     
-    combined_meta$time_from_first_symptoms <- as.numeric(
-        as.Date(combined_meta$sample_date, format = "%d/%m/%Y") -
-            as.Date(combined_meta$date_first_symptoms, format = "%d/%m/%Y")
-    )
-    
-    combined_meta$date_first_x <- combined_meta$date_first_symptoms
     combined_meta$time_from_first_x <- combined_meta$time_from_first_symptoms
     
     for (i in 1:length(combined_meta$time_from_first_symptoms)) {
@@ -347,11 +359,12 @@ get_soma_data <- function(soma_abundance, sample_meta, sample_technical_meta, fe
         
         if (max_time == "swab") {
             
-            combined_meta$date_first_x[i] <- combined_meta$date_first_positive_swab[i]
+            # combined_meta$date_first_x[i] <- combined_meta$date_first_positive_swab[i]
             combined_meta$time_from_first_x[i] <- combined_meta$time_from_first_positive_swab[i]
             
         } else {
-            combined_meta$date_first_x[i] <- combined_meta$date_first_symptoms[i]
+            
+            # combined_meta$date_first_x[i] <- combined_meta$date_first_symptoms[i]
             combined_meta$time_from_first_x[i] <- combined_meta$time_from_first_symptoms[i]
         }
     }

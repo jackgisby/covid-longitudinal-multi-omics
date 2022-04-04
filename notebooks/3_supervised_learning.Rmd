@@ -1,0 +1,156 @@
+---
+title: "Supervised Learning"
+author: "Jack Gisby"
+date: "`r Sys.Date()`"
+output:
+  github_document:
+    toc: true
+    toc_depth: 2
+    fig_width: 10
+    fig_height: 7
+---
+
+```{r}
+library(SummarizedExperiment)
+library(data.table)
+library(edgeR)
+library(DESeq2)
+library(caret)
+library(biomaRt)
+library(rmcorr)
+
+source("../R/preprocessing.R")
+source("../R/de.R")
+```
+
+```{r load_data}
+
+input_data <- list(
+    "prot" = read.csv("../results/3_supervised_learning/collated_data/prot_input_data.csv"),
+    "rna" = read.csv("../results/3_supervised_learning/collated_data/rna_input_data.csv"),
+    "both" = read.csv("../results/3_supervised_learning/collated_data/both_input_data.csv")
+)
+
+```
+
+```{r}
+
+num_resamples <- 200
+
+for (model_type in c("prot", "rna", "both")) {
+    
+    print(paste0("------------------------- ", model_type))
+    
+    tuneGrid <- list(
+        "rf" = data.frame(mtry = floor(sqrt(ncol(input_data[[model_type]]) - 1))), 
+        "glmnet" = data.frame(alpha = 1, lambda = seq(0, 1, length = 1000))
+    )
+    
+    set.seed(1)
+    resamples <- createDataPartition(input_data[[model_type]]$.outcome, p = 0.8, times = num_resamples)
+    
+    trained_model <- list()
+    
+    for (algo in c("rf", "glmnet")) {
+        
+        print(paste0("---------- ", algo))
+        
+        set.seed(1)
+        
+        trained_model[[algo]] <- train(
+            x = dplyr::select(input_data[[model_type]], -.outcome), 
+            y = input_data[[model_type]]$.outcome, 
+            localImp = TRUE,
+            method = algo, 
+            metric = "ROC",
+            proximity = TRUE,
+            preProcess = c("center", "scale"),
+            na.action = na.pass,
+            tuneGrid = tuneGrid[[algo]],
+            trControl = trainControl(
+                method = "LGOCV", 
+                classProbs = TRUE, 
+                allowParallel = TRUE, 
+                summaryFunction = twoClassSummary, 
+                savePredictions = TRUE,
+                index = resamples,
+                verboseIter = TRUE
+            )
+        )
+        
+        saveRDS(trained_model[[algo]], paste0("../results/3_supervised_learning/", model_type, "_", algo, "_model.rds"))
+    }
+}
+
+```
+
+```{r}
+
+model_details <- data.frame()
+
+for (model_type in c("both", "rna", "prot")) {
+    
+    print(paste0("------------------------- ", model_type))
+
+    for (algo in c("rf", "glmnet")) {
+        
+        print(paste0("---------- ", algo))
+        
+        trained_model <- readRDS(paste0("../results/3_supervised_learning/", model_type, "_", algo, "_model.rds"))
+        
+        best_model_idx <- which.max(trained_model$results$ROC)
+        
+        roc_iterations <- data.frame()
+        
+        num_resamples <- length(unique(trained_model$pred$Resample))
+        
+        for (resample in unique(trained_model$pred$Resample)) {
+
+            resample_data <- trained_model$pred[trained_model$pred$Resample == resample ,]
+            
+            if (algo == "glmnet") {
+                resample_data <- resample_data[resample_data$lambda == trained_model$bestTune$lambda ,]
+            }
+
+            roc_obj <- pROC::roc(resample_data$obs, resample_data$severe_critical, levels = c("mild_moderate", "severe_critical"), direction = "<")
+            roc_iterations <- rbind(roc_iterations, data.frame(resample = resample, auc = roc_obj$auc[1]))
+        }
+        
+        model_details <- rbind(model_details, data.frame(
+            model_type = model_type,
+            algo = algo,
+            roc = mean(roc_iterations$auc),
+            roc_sd = sd(roc_iterations$auc),
+            resamples = num_resamples
+        ))
+    }
+}
+
+model_details$sem <- model_details$roc_sd / sqrt(model_details$resamples)
+model_details$lower <- model_details$roc - (1.96 * model_details$sem)
+model_details$upper <- model_details$roc + (1.96 * model_details$sem)
+model_details$model_type[model_details$model_type == "rna"] <- "gene"
+
+write.csv(model_details, "../results/3_supervised_learning/model_details.csv")
+
+model_details$model_type <- factor(model_details$model_type, c("prot", "both", "gene"))
+
+glmnet_auc_comparison <- ggplot(model_details[model_details$algo == "glmnet" ,], aes(model_type, roc)) +
+    geom_point(position = position_dodge(width = 0.9), size = 0.7) +
+    geom_errorbar(aes(ymin = lower, ymax = upper), position = "dodge", width = 0.5)
+
+glmnet_auc_comparison
+
+rf_auc_comparison <- ggplot(model_details[model_details$algo == "rf" ,], aes(model_type, roc)) +
+    geom_point(position = position_dodge(width = 0.9), size = 0.7) +
+    geom_errorbar(aes(ymin = lower, ymax = upper), position = "dodge", width = 0.5)
+
+rf_auc_comparison
+
+```
+
+```{r session_info}
+
+sessionInfo()
+
+```

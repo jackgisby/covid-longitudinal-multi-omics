@@ -1,0 +1,314 @@
+---
+title: "Module Analysis"
+author: "Jack Gisby"
+date: "`r Sys.Date()`"
+output:
+  github_document:
+    toc: true
+    toc_depth: 2
+    fig_width: 10
+    fig_height: 7
+---
+
+```{r}
+library(rmcorr)
+library(foreach)
+library(doParallel)
+library(SummarizedExperiment)
+library(WGCNA)
+library(lmerTest)
+library(splines)
+library(ggeffects)
+library(ggplot2)
+
+source("../R/preprocessing.R")
+source("../R/de.R")
+
+set.seed(1)
+```
+
+```{r}
+
+prot_long <- read.csv("../../scripts/20211119_rmcorr/rmcorr_matrices/prot_data.csv")
+prot_wide <- tidyr::pivot_wider(dplyr::select(prot_long, sample, value, feature, individual_id), names_from = feature)
+
+rna_se <- readRDS("../../scripts/20211119_rmcorr/rmcorr_matrices/rna_data.rds")
+
+rna_long <- reshape2::melt(assay(rna_se, 2))
+colnames(rna_long) <- c("feature", "sample", "value")
+
+rna_long$individual_id <- gsub("_.*","", rna_long$sample)
+
+```
+
+
+```{r generate_rmcorr_matrix, eval=FALSE, include=TRUE}
+
+calc_cor_matrix <- function(long_data) {
+    
+    unique_features <- unique(long_data$feature)
+    
+    # this code turns the long data into an ordered list that is convenient for later calculations
+    matrix_data <- long_data[long_data$feature == unique_features[1] ,]
+    matrix_data <- dplyr::select(matrix_data, sample, individual_id)
+    matrix_data_nrow <- nrow(matrix_data)
+    
+    # create a sample by feature matrix based on the long dataframe
+    for (cname in unique_features) {
+        
+        if (which(unique_features == cname) %% 1000 == 0) {
+            print(which(unique_features == cname))
+        }
+
+        feature_values <- long_data[long_data$feature == cname ,]
+        feature_values <- dplyr::select(feature_values, -feature)
+        colnames(feature_values) <- gsub("value", cname, colnames(feature_values))
+        
+        stopifnot(nrow(feature_values) == nrow(matrix_data))
+        stopifnot(all(feature_values$sample %in% matrix_data$sample))
+        stopifnot(!any(duplicated(feature_values$sample)))
+
+        matrix_data <- dplyr::left_join(matrix_data, feature_values, by = c("sample" = "sample", "individual_id" = "individual_id"))
+    }
+    
+    stopifnot(nrow(matrix_data) == matrix_data_nrow)
+
+    # based on https://stackoverflow.com/questions/38318139/run-a-for-loop-in-parallel-in-r
+    # setup parallel backend to use many processors
+    cores <- detectCores(logical = FALSE)
+    print(paste0("Using ", cores, " cores"))
+    
+    cl <- makeCluster(cores[1]) #not to overload your computer
+    registerDoParallel(cl)
+    
+    # this is like a loop, equivalent to: for (i in 1:length(unique_features)) {
+    finalMatrix <- foreach(i = 1:length(unique_features), .combine = cbind) %dopar% {
+
+        # set up a temporary single column matrix to be combined by columns with the final matrix
+        tempMatrix <- matrix(nrow = length(unique_features), ncol = 1)
+        i_feature <- unique_features[i]
+        colnames(tempMatrix) <- i_feature
+        rownames(tempMatrix) <- rep("", length(unique_features))
+
+        # compare the selected feature to all the other features
+        for (j in 1:length(unique_features)) {
+
+            # if this is a self comparison, correlation is 1
+            # only fill in the upper triangle of the matrix - so break once we hit i == j
+            if (i == j) {
+
+                tempMatrix[j, 1] <- 1
+                break
+
+            } else {
+
+                j_feature <- unique_features[j]
+
+                combined_data <- data.frame(
+                    "individual_id" = matrix_data$individual_id,
+                    "feature_1" = matrix_data[[i_feature]],
+                    "feature_2" = matrix_data[[j_feature]]
+                )
+
+                tempMatrix[j, 1] <- rmcorr::rmcorr(
+                    individual_id,
+                    feature_1,
+                    feature_2,
+                    combined_data
+                )$r
+            }
+        }
+        
+        rownames(tempMatrix) <- unique_features
+
+        return(tempMatrix)  # equivalent to finalMatrix <- cbind(finalMatrix, tempMatrix)
+    }
+    
+    stopCluster(cl)
+    
+    # fill in lower triangle of the matrix
+    finalMatrix[lower.tri(finalMatrix)] <- t(finalMatrix)[lower.tri(finalMatrix)]
+    stopifnot(isSymmetric(finalMatrix))
+    
+    return(finalMatrix)
+}
+
+datasets <- list(prot = prot_long, rna = rna_long)
+
+for (dataset_name in names(datasets)) {
+    
+    print(paste0("--------------------------------------- ", dataset_name))
+    
+    dataset_rmcorr_matrix <- calc_cor_matrix(datasets[[dataset_name]])
+    
+    write.csv(dataset_rmcorr_matrix, paste0("../results/4_module_analysis/", dataset_name, "_rmcorr_matrix.csv"))
+}
+
+```
+
+```{r}
+
+set.seed(1)
+
+rna_rmcorr <- as.matrix(data.table::fread("../results/4_module_analysis/rmcorr_matrices/rna_rmcorr_matrix.csv"), rownames = 1)
+prot_rmcorr <- as.matrix(data.table::fread("../results/4_module_analysis/rmcorr_matrices/prot_rmcorr_matrix.csv"), rownames = 1)
+
+```
+
+```{r}
+
+#---------------------- define modules
+
+cmatrix_to_modules <- function(cmatrix, powers = 1:40, deepSplit = 4) {
+    
+    if (length(powers) > 1) {
+        
+        threshold <- pickSoftThreshold.fromSimilarity((0.5 * (1 + cmatrix)), RsquaredCut = 0.85, powerVector = powers, verbose = 2)
+        power <- threshold$powerEstimate
+        
+    } else {
+        power <- powers
+    }
+    
+    adjacency <- adjacency.fromSimilarity(cmatrix, type = "signed", power = power)
+    
+    TOM <- TOMdist(adjacency, TOMType = "signed")
+    
+    clust <- flashClust::flashClust(as.dist(TOM), method = "average")
+    cutree <- cutreeDynamic(dendro = clust, distM = TOM, method = "hybrid", deepSplit = deepSplit, pamRespectsDendro = FALSE, minClusterSize = 30)
+    
+    modules <- labels2colors(cutree)
+    names(modules) <- colnames(adjacency)
+    
+    plotDendroAndColors(clust, modules, dendroLabels = FALSE)
+    
+    return(modules)
+}
+
+prot_modules <- cmatrix_to_modules(prot_rmcorr, powers = 13, deepSplit = 4)
+rna_modules <- cmatrix_to_modules(rna_rmcorr, powers = 26, deepSplit = 4)
+
+#---------------------- merge modules
+
+reordered_prot_wide <- dplyr::select(prot_wide, sample, individual_id)
+
+for (gene_id in names(prot_modules)) {
+    
+    col <- data.frame(prot_wide[[gene_id]])
+    colnames(col) <- gene_id
+    
+    reordered_prot_wide <- cbind(reordered_prot_wide, col)
+}
+
+# check that the protein modules are in the same order as the prot_wide column names
+stopifnot(all(names(prot_modules) == colnames(dplyr::select(reordered_prot_wide, -sample, -individual_id))))
+prot_merged_modules <- mergeCloseModules(dplyr::select(reordered_prot_wide, -sample, -individual_id), prot_modules, cutHeight = 0.25)
+
+modules_to_letters <- function(modules) {
+    
+    if (any(modules$module == "grey")) {
+        unclustered_features <- modules$feature[modules$module == "grey"]
+        modules <- modules[!(modules$feature %in% unclustered_features) ,]
+    }
+
+    modules_to_letters <- LETTERS
+    modules_to_letters <- modules_to_letters[1:length(unique(modules$module))]
+    names(modules_to_letters) <- unique(modules$module)
+    modules$module <- sapply(modules$module, function(m) {modules_to_letters[names(modules_to_letters) == m]})
+    
+    return(modules)
+}
+
+write.csv(
+    modules_to_letters(data.frame(feature = names(prot_merged_modules$colors), module = prot_merged_modules$colors)), 
+    "../results/4_module_analysis/prot_modules.csv", 
+    row.names = FALSE
+)
+
+stopifnot(all(names(rna_modules) == colnames(t(assay(rna_se, 2)))))
+rna_merged_modules <- mergeCloseModules(t(assay(rna_se, 2)), rna_modules, cutHeight = 0.25)
+
+write.csv(
+    modules_to_letters(data.frame(feature = names(rna_merged_modules$colors), module = rna_merged_modules$colors)), 
+    "../results/4_module_analysis/rna_modules.csv", 
+    row.names = FALSE
+)
+
+```
+
+```{r}
+
+final_rna_modules <- read.csv("../results/4_module_analysis/prot_modules.csv")
+final_rna_modules <- final_rna_modules[final_rna_modules$module == "B" ,]
+
+eigengenes <- data.frame(colData(rna_se))
+
+eigengenes$WHO_temp_severity <- ordered(eigengenes$WHO_temp_severity, c("mild", "moderate", "severe", "critical"))
+eigengenes$grouped_WHO_severity <- factor(ifelse(eigengenes$WHO_severity %in% c("mild", "moderate"), "mild_moderate", "severe_critical"), c("mild_moderate", "severe_critical"))
+
+rownames(eigengenes) <- eigengenes$sample_id
+eigengenes$WHO_severity <- ordered(eigengenes$WHO_severity, c("mild", "moderate", "severe", "critical"))
+
+eigengenes$wave <- as.factor(eigengenes$wave - 1)
+
+
+mod_expr <- scale(t(assay(rna_se[which(rowData(rna_se)$gene_id %in% final_rna_modules$feature) ,], 2)))
+
+eigengenes$expr <- svd(t(mod_expr))$v[,1]
+
+member_cors <- c()
+for (i in 1:ncol(mod_expr)) {
+    member_cors <- c(member_cors, cor(mod_expr[,i], eigengenes$expr))
+}
+
+eigengenes$expr <- eigengenes$expr * sign(mean(member_cors))
+
+longt_eigengene <- eigengenes[eigengenes$time_from_first_x <= 21 & eigengenes$time_from_first_x >= 0 & !is.na(eigengenes$time_from_first_x) ,]
+
+sev_model <- single_lmer(
+    "expr ~ WHO_temp_severity + calc_age + sex + ethnicity + wave + (1 | individual_id)",
+    data = eigengenes
+)
+
+print(anova(sev_model))
+
+ggplot(eigengenes, aes(WHO_temp_severity, expr)) +
+    geom_violin(aes(fill = WHO_temp_severity)) +
+    scale_fill_manual(values = c("#7E03A8FF", "#CC4678FF", "#F89441FF", "#F0F921FF")) +
+    theme(legend.title = element_blank(), axis.title.x = element_blank()) +
+    geom_boxplot(width = 0.1) +
+    ylab("logCPM")
+
+longt_model <- single_lmer(
+    "expr ~ bs(time_from_first_x, degree = 2) * grouped_WHO_severity + calc_age + sex + ethnicity + wave + (1 | individual_id)",
+    data = longt_eigengene
+)
+
+print(anova(longt_model))
+
+ind_table <- table(longt_eigengene$individual_id)
+
+# use ggemmeans to estimate confidence intervals/fits
+predictions <- ggemmeans(longt_model, c("time_from_first_x [all]", "grouped_WHO_severity"))
+names(predictions) <- c("time_from_first_x", "gene_expr", "std.error", "conf.low", "conf.high", "grouped_WHO_severity")
+
+# plot just the CI estimations
+ggplot(predictions, aes(time_from_first_x, gene_expr, group = grouped_WHO_severity, fill = grouped_WHO_severity)) +
+    geom_line(aes(colour = grouped_WHO_severity), size = 1.7) +
+    geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.055) +
+    scale_color_manual(values = c("#2C7BB6", "#D7191C")) +
+    scale_fill_manual(values = c("#2C7BB6", "#D7191C"))
+
+ggplot(longt_eigengene[!(longt_eigengene$individual_id %in% names(ind_table)[ind_table == 1]), ], aes(time_from_first_x, expr, col = grouped_WHO_severity)) +
+    geom_point(alpha = 0.7, size = 0.7) +
+    geom_line(aes(group = individual_id), alpha = 0.7, size = 0.8) +
+    scale_color_manual(values = c("#2C7BB6", "#D7191C")) +
+    facet_wrap(~grouped_WHO_severity) + 
+    theme(strip.background = element_blank(), strip.text.x = element_blank(), strip.text.y = element_blank())
+```
+
+```{r session_info}
+
+sessionInfo()
+
+```

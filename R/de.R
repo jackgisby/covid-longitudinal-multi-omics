@@ -144,7 +144,15 @@ run_enrichment <- function(tt, de_p_cutoff = 0.01, go_p_cutoff = 0.05, desc = "c
   names(geneList) <- mapIds(org.Hs.eg.db, keys = names(geneList), column = "ENTREZID", keytype = "ENSEMBL", multiVals = "first")
   de <- names(geneList)[geneList <= p_val_cutoff]
 
-  df_terms[["REACTOME"]] <- enrichPathway(de, qvalueCutoff = go_p_cutoff, universe = names(geneList), maxGSSize = 10000)
+  df_terms[["REACTOME"]] <- enrichPathway(de, pvalueCutoff = go_p_cutoff, qvalueCutoff = 1, universe = names(geneList))
+  
+  #-------- REACTOME
+  
+  t2g <- msigdbr::msigdbr(species = "human", category = "C2") 
+  t2g <- t2g[t2g$gs_subcat != "CGP" ,]
+  t2g <- as.data.frame(dplyr::distinct(t2g, gs_name, entrez_gene))
+  
+  df_terms[["MSIGDB"]] <- clusterProfiler::enricher(de, pvalueCutoff = go_p_cutoff, qvalueCutoff = 1, universe = names(geneList), TERM2GENE = t2g)
 
   return(df_terms)
 }
@@ -233,7 +241,7 @@ make_sticky_plots <- function(cpm_vec, label_vec, ind_vec, colour_vec) {
   
   sticky_plot <- ggplot(ggplot_input, aes(x = label, y = cpm)) +
     geom_violin(aes(x = label, fill = as.factor(label)), alpha = 0.65, color = "white") + # Create violin distributions
-    geom_boxplot(aes(group = label), width = 0.1, outlier.shape = NA, coef = 0) +
+    geom_boxplot(aes(group = label), width = 0.18, outlier.shape = NA, coef = 0) +
     geom_rect(mapping = aes(xmin = 1, xmax = 2, ymin = min(cpm), ymax = max(cpm)), fill = "white") + # Cut distributions in half
     geom_line(aes(x = label_plus_jitter, group = ind), color = "grey") + # Create lines between points for each subject
     geom_point(aes(x = label_plus_jitter, fill = label), alpha = 0.9, pch = 21, color = "black", size = 1.2) + # Insert each participants data points
@@ -382,4 +390,23 @@ plot_longitudinal <- function(single_gene_normalised_logcpm, output_dir, gene_na
     "estimates_only" = estimates_only,
     "raw_plot" = raw_plot
   ))
+}
+
+pset_de <- function(se, pset, col_data, formula_string, REML = TRUE) {
+  
+  set_models <- list()
+  
+  for (i in 1:nrow(pset)) {
+    
+    # print(paste0(i, " / ", nrow(pset)))
+    
+    set_name <- rownames(pset)[i]
+    set_data <- data.frame(sample_id = colnames(pset), set_expr = pset[i, ])
+    
+    set_data_with_covariates <- dplyr::left_join(set_data, col_data, by = c("sample_id" = "sample_id"))
+    
+    set_models[[set_name]] <- single_lmer(set_data_with_covariates, formula_string, REML = REML)
+  }
+  
+  return(set_models)
 }

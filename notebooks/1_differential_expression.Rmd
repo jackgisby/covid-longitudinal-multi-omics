@@ -1,0 +1,378 @@
+---
+title: "Differential Expression Analysis"
+author: "Jack Gisby"
+date: "`r Sys.Date()`"
+output:
+  github_document:
+    toc: true
+    toc_depth: 2
+    fig_width: 10
+    fig_height: 7
+---
+
+# Load data and code
+## Load packages and custom functions
+
+Custom functions for loading data, running differential expression and 
+enrichment analyses, and making plots can be found in the `../R` directory. The 
+main functions and their arguments are described by comments within these files. 
+
+```{r load_functions, message=FALSE, warning=FALSE}
+
+# load necessary packages
+library(data.table)
+library(SummarizedExperiment)
+library(variancePartition)
+library(BiocParallel)
+library(edgeR)
+library(lmerTest)
+library(GSVA)
+library(biomaRt)
+
+# load custom functions from the R/ directory
+source("../R/preprocessing.R")
+source("../R/de.R")
+
+set.seed(1)
+
+```
+
+## Load RNA-seq data
+
+The raw RNA-seq counts are loaded, transformed into `SummarizedExperiment` objects,
+and split into the "Wave 1" and "Wave 2" cohorts. `SnowParam` is also initialised
+for the differential expression analysis using the `variancePartition` package.
+
+```{r load_rna_data, message=FALSE, warning=FALSE}
+
+# get the raw RNA-seq counts
+htseq_counts <- data.frame(fread("../data/htseq_counts.csv"))
+
+mart <- useDataset("hsapiens_gene_ensembl", useMart("ensembl"))
+
+# get the wave 1 and wave 2 counts and their associated metadata
+wave1_counts <- get_summarized_experiment(
+  htseq_counts, 
+  "../data/w1_metadata.csv", 
+  mart = mart
+)
+
+wave2_counts <- get_summarized_experiment(
+  htseq_counts, 
+  "../data/w2_metadata.csv", 
+  mart = mart
+)
+
+# prepare multiprocessing for RNA-seq differential expression
+num_cores <- 5
+param <- SnowParam(num_cores, "SOCK", progressbar = TRUE)
+register(param)
+
+```
+
+## Load SOMA protein data
+
+The SOMA data is loaded into long format and split into the "Wave 1" and 
+"Wave 2" cohorts.
+
+```{r load_prot_data, message=FALSE, warning=FALSE}
+
+wave1_soma <- get_soma_data(
+  soma_abundance = "../data/soma_abundance.csv", 
+  sample_meta = "../data/w1_metadata.csv", 
+  sample_technical_meta = "../data/sample_technical_meta.csv", 
+  feature_meta = "../data/feature_meta.csv",
+  ret_wide = FALSE
+)
+
+wave2_soma <- get_soma_data(
+  soma_abundance = "../data/soma_abundance.csv", 
+  sample_meta = "../data/w2_metadata.csv", 
+  sample_technical_meta = "../data/sample_technical_meta.csv", 
+  feature_meta = "../data/feature_meta.csv",
+  ret_wide = FALSE
+)
+
+```
+
+# Differential expression analyses of COVID-19 status
+
+## RNA-seq analysis using dream and GSVA
+
+### Wave 1 transcriptomic COVID-19 infected vs. non-infected comparison
+
+```{r wave1_case_control_gene_de, message=FALSE, warning=FALSE, fig.show='hide'}
+
+# apply normalisation to counts (returns edgeR DGE object)
+wave1_case_control_dge <- normalize_se(
+  wave1_counts,
+  normalisation_level = "pre_dream",
+  group = "case_control"
+)
+
+# run dream differential expression analysis (from variancePartition package)
+wave1_case_control_de <- run_dream(
+  f = ~ case_control + sex + ethnicity + calc_age + (1 | individual_id),
+  dge = wave1_case_control_dge,
+  L = list(case_control = "case_controlPOSITIVE"),
+  L_is_contrasts = FALSE
+)
+
+write.csv(
+    wave1_case_control_de$case_control_tt, 
+    "../results/1_differential_expression/wave_1/gene_negative_vs_positive.csv", 
+    row.names = FALSE
+)
+
+head(wave1_case_control_de$case_control_tt)
+
+```
+
+### Wave 2 transcriptomic COVID-19 infected vs. pre-infection comparison
+
+```{r wave2_case_control_gene_de, message=FALSE, warning=FALSE, fig.show='hide'}
+
+# apply normalisation to counts (returns edgeR DGE object)
+# only NEGATIVE (pre-infection) and POSITIVE samples are compared in this analysis
+wave2_case_control_dge <- normalize_se(
+  wave2_counts[, wave2_counts$case_control != "RECOVERY"],
+  normalisation_level = "pre_dream",
+  group = "case_control"
+)
+
+# run dream differential expression analysis (from variancePartition package)
+wave2_case_control_de <- run_dream(
+  f = ~ case_control + sex + ethnicity + calc_age + (1 | individual_id),
+  dge = wave2_case_control_dge,
+  L = list(case_control = "case_controlPOSITIVE"),
+  L_is_contrasts = FALSE
+)
+
+write.csv(
+    wave2_case_control_de$case_control_tt, 
+    "../results/1_differential_expression/wave_2/gene_negative_vs_positive.csv", 
+    row.names = FALSE
+)
+
+print(head(wave2_case_control_de$case_control_tt))
+
+```
+
+### Wave 2 transcriptomic COVID-19 recovery vs. pre-infection comparison
+
+```{r wave2_preinfection_recovery_gene_de, message=FALSE, warning=FALSE, fig.show='hide'}
+
+# only NEGATIVE (pre-infection) and RECOVERY samples are compared in this analysis
+wave2_recov_counts <- wave2_counts[, wave2_counts$case_control != "POSITIVE"]
+
+# some patients do not have a RECOVERY sample
+# since this is a paired analysis, these individual's pre-infection timepoints are removed
+individuals_with_recovery_sample <- wave2_recov_counts$individual_id[wave2_recov_counts$case_control == "RECOVERY"]
+wave2_recov_counts <- wave2_recov_counts[,  wave2_recov_counts$individual_id %in% individuals_with_recovery_sample]
+
+# apply normalisation to counts (returns edgeR DGE object)
+wave2_recovery_dge <- normalize_se(
+  wave2_recov_counts, 
+  normalisation_level = "pre_dream", 
+  group = "case_control"
+)
+
+# run dream differential expression analysis (from variancePartition package)
+wave2_recovery_de <- run_dream(
+  f = ~ case_control + sex + ethnicity + calc_age + (1 | individual_id),
+  dge = wave2_recovery_dge,
+  L = list(case_control = "case_controlRECOVERY"),
+  L_is_contrasts = FALSE
+)
+
+write.csv(
+    wave2_recovery_de$case_control_tt, 
+    "../results/1_differential_expression/wave_2/gene_negative_vs_recovery.csv", 
+    row.names = FALSE
+)
+
+print(head(wave2_recovery_de$case_control_tt))
+
+```
+
+## Proteomic analysis using dream and GSVA
+
+### Wave 1 proteomic COVID-19 infected vs. non-infected comparison
+
+```{r wave1_case_control_prot_de, message=FALSE, warning=FALSE, fig.show='hide'}
+
+wave1_case_control_models <- soma_de(
+  soma_long = wave1_soma,
+  formula_string = "RFU ~ case_control + sex + ethnicity + calc_age + (1 | individual_id)"
+)
+
+# takes a list of models and applies anova to each one
+# the anova results are concatenated, written as a CSV, and returned as a data.frame
+models_to_df <- function(m, file_path) {
+    
+    model_df <- data.frame()
+    
+    for (i in 1:length(m)) {
+        
+        anova_df <- data.frame(anova(m[[i]]))
+        colnames(anova_df) <- c("sum_sq", "mean_sq", "num_df", "den_df", "f_value", "p_value")
+        
+        anova_df$feature <- names(m)[i]
+        anova_df$term <- rownames(anova_df)
+
+        model_df <- rbind(model_df, anova_df)
+    }
+    
+    rownames(model_df) <- NULL
+    model_df$adjusted_p_value <- NA
+    
+    for (term in unique(model_df$term)) {
+        
+        model_df$adjusted_p_value[model_df$term == term] <- p.adjust(model_df$p_value[model_df$term == term], method = "BH")
+    }
+    
+    write.csv(model_df, file_path, row.names = FALSE)
+    
+    return(model_df)
+}
+
+wave1_case_control_df <- models_to_df(
+    wave1_case_control_models, 
+    "../results/1_differential_expression/wave_1/protein_negative_vs_positive.csv"
+)
+
+head(wave1_case_control_df[wave1_case_control_df$term == "case_control" ,])
+
+```
+
+### Wave 2 proteomic COVID-19 infected vs. non-infected comparison
+
+```{r wave2_case_control_prot_de, message=FALSE, warning=FALSE, fig.show='hide'}
+
+wave2_case_control_models <- soma_de(
+  soma_long = wave2_soma,
+  formula_string = "RFU ~ case_control + sex + ethnicity + calc_age + (1 | individual_id)"
+)
+
+wave2_case_control_df <- models_to_df(
+    wave2_case_control_models, 
+    "../results/1_differential_expression/wave_2/protein_negative_vs_positive.csv"
+)
+
+head(wave2_case_control_df[wave2_case_control_df$term == "case_control" ,])
+
+```
+
+# Differential expression analyses of COVID-19 severity at time of sampling
+
+## RNA-seq
+
+### Wave 1 transcriptomic COVID-19 severity analysis
+
+```{r wave1_severity_gene_de, message=FALSE, warning=FALSE, fig.show='hide'}
+
+wave1_counts$WHO_temp_severity <- ordered(wave1_counts$WHO_temp_severity, c("mild", "moderate", "severe", "critical"))
+
+wave1_severity_dge <- normalize_se(
+  wave1_counts[, wave1_counts$case_control == "POSITIVE" & !is.na(wave1_counts$WHO_temp_severity)],
+  normalisation_level = "pre_dream",
+  group = "WHO_temp_severity"
+)
+
+# run the differential expression
+wave1_severity_de <- run_dream(
+  f = ~ WHO_temp_severity + sex + ethnicity + calc_age + (1 | individual_id),
+  dge = wave1_severity_dge,
+  L = list("WHO_temp_severity" = c("WHO_temp_severity.L", "WHO_temp_severity.Q", "WHO_temp_severity.C")),
+  L_is_contrasts = FALSE
+)
+
+write.csv(
+    wave1_severity_de$WHO_temp_severity_tt, 
+    "../results/1_differential_expression/wave_1/gene_severity.csv", 
+    row.names = FALSE
+)
+
+print(head(wave1_severity_de$WHO_temp_severity_tt))
+
+```
+
+### Wave 2 transcriptomic COVID-19 severity analysis
+
+```{r wave2_severity_gene_de, message=FALSE, warning=FALSE, fig.show='hide'}
+
+wave2_counts$WHO_temp_severity <- ordered(wave2_counts$WHO_temp_severity, c("mild", "moderate", "severe", "critical"))
+
+wave2_severity_dge <- normalize_se(
+  wave2_counts[, wave2_counts$case_control == "POSITIVE" & !is.na(wave2_counts$WHO_temp_severity)],
+  normalisation_level = "pre_dream",
+  group = "WHO_temp_severity"
+)
+
+# run the differential expression
+wave2_severity_de <- run_dream(
+  f = ~ WHO_temp_severity + sex + ethnicity + calc_age + (1 | individual_id),
+  dge = wave2_severity_dge,
+  L = list(WHO_temp_severity = c("WHO_temp_severity.L", "WHO_temp_severity.Q", "WHO_temp_severity.C")),
+  L_is_contrasts = FALSE
+)
+
+write.csv(
+    wave2_severity_de$WHO_temp_severity_tt, 
+    "../results/1_differential_expression/wave_2/gene_severity.csv", 
+    row.names = FALSE
+)
+
+print(head(wave2_severity_de$WHO_temp_severity_tt))
+
+```
+
+## Proteomics
+
+### Wave 1 proteomic COVID-19 severity analysis
+
+```{r wave1_severity_prot_de, message=FALSE, warning=FALSE, fig.show='hide'}
+
+wave1_soma$WHO_temp_severity <- ordered(wave1_soma$WHO_temp_severity, c("mild", "moderate", "severe", "critical"))
+wave1_soma_positive <- wave1_soma[wave1_soma$case_control == "POSITIVE" & !is.na(wave1_soma$WHO_temp_severity) ,]
+
+wave1_severity_models <- soma_de(
+  soma_long = wave1_soma_positive,
+  formula_string = "RFU ~ WHO_temp_severity + sex + ethnicity + calc_age + (1 | individual_id)"
+)
+
+wave1_severity_df <- models_to_df(
+    wave1_severity_models, 
+    "../results/1_differential_expression/wave_1/protein_severity.csv"
+)
+
+head(wave1_severity_df[wave1_severity_df$term == "WHO_temp_severity" ,])
+
+```
+
+### Wave 2 proteomic COVID-19 severity analysis
+
+```{r wave2_severity_prot_de, message=FALSE, warning=FALSE, fig.show='hide'}
+
+wave2_soma$WHO_temp_severity <- ordered(wave2_soma$WHO_temp_severity, c("mild", "moderate", "severe", "critical"))
+wave2_soma_severity <- wave2_soma[wave2_soma$case_control == "POSITIVE" & !is.na(wave2_soma$WHO_temp_severity) ,]
+
+
+wave2_severity_models <- soma_de(
+  soma_long = wave2_soma_severity,
+  formula_string = "RFU ~ WHO_temp_severity + sex + ethnicity + calc_age + (1 | individual_id)"
+)
+
+wave2_severity_df <- models_to_df(
+    wave2_severity_models, 
+    "../results/1_differential_expression/wave_2/protein_severity.csv"
+)
+
+head(wave2_severity_df[wave2_severity_df$term == "WHO_temp_severity" ,])
+
+```
+
+```{r session_info}
+sessionInfo()
+```
+
