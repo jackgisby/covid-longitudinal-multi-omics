@@ -13,13 +13,14 @@ output:
 # Load data and code
 ## Load packages and custom functions
 
-Custom functions for loading data, running differential expression and 
-enrichment analyses, and making plots can be found in the `../R` directory. The 
-main functions and their arguments are described by comments within these files. 
+This chunk loads packages required for the notebook in addition to custom
+functions in the `../R` directory. These include functions for loading data,
+running differential expression and enrichment analyses and making plots. The
+main functions and their arguments are described by comments within these files.
 
 ```{r load_functions, message=FALSE, warning=FALSE}
 
-# load necessary packages
+# load relevant packages
 library(data.table)
 library(SummarizedExperiment)
 library(variancePartition)
@@ -28,6 +29,13 @@ library(edgeR)
 library(lmerTest)
 library(GSVA)
 library(biomaRt)
+
+# set up plotting settings
+library(ggplot2)
+library(ggpubr)
+
+theme_set(theme_pubr(border = TRUE))
+theme_update(text = element_text(size = 8))
 
 # load custom functions from the R/ directory
 source("../R/preprocessing.R")
@@ -48,18 +56,18 @@ for the differential expression analysis using the `variancePartition` package.
 # get the raw RNA-seq counts
 htseq_counts <- data.frame(fread("../data/htseq_counts.csv"))
 
-mart <- useDataset("hsapiens_gene_ensembl", useMart("ensembl"))
+mart <- useDataset("hsapiens_gene_ensembl", useMart("ensembl", host="uswest.ensembl.org"))
 
 # get the wave 1 and wave 2 counts and their associated metadata
 wave1_counts <- get_summarized_experiment(
-  htseq_counts, 
-  "../data/w1_metadata.csv", 
+  htseq_counts,
+  "../data/w1_metadata.csv",
   mart = mart
 )
 
 wave2_counts <- get_summarized_experiment(
-  htseq_counts, 
-  "../data/w2_metadata.csv", 
+  htseq_counts,
+  "../data/w2_metadata.csv",
   mart = mart
 )
 
@@ -73,22 +81,24 @@ register(param)
 ## Load SOMA protein data
 
 The SOMA data is loaded into long format and split into the "Wave 1" and 
-"Wave 2" cohorts.
+"Wave 2" cohorts by the `get_soma_data` function. 
 
 ```{r load_prot_data, message=FALSE, warning=FALSE}
 
+# get the data for wave 1
 wave1_soma <- get_soma_data(
-  soma_abundance = "../data/soma_abundance.csv", 
-  sample_meta = "../data/w1_metadata.csv", 
-  sample_technical_meta = "../data/sample_technical_meta.csv", 
+  soma_abundance = "../data/soma_abundance.csv",
+  sample_meta = "../data/w1_metadata.csv",
+  sample_technical_meta = "../data/sample_technical_meta.csv",
   feature_meta = "../data/feature_meta.csv",
   ret_wide = FALSE
 )
 
+# get the data for wave 2
 wave2_soma <- get_soma_data(
-  soma_abundance = "../data/soma_abundance.csv", 
-  sample_meta = "../data/w2_metadata.csv", 
-  sample_technical_meta = "../data/sample_technical_meta.csv", 
+  soma_abundance = "../data/soma_abundance.csv",
+  sample_meta = "../data/w2_metadata.csv",
+  sample_technical_meta = "../data/sample_technical_meta.csv",
   feature_meta = "../data/feature_meta.csv",
   ret_wide = FALSE
 )
@@ -97,7 +107,25 @@ wave2_soma <- get_soma_data(
 
 # Differential expression analyses of COVID-19 status
 
-## RNA-seq analysis using dream and GSVA
+The following code chunks apply linear mixed models to genes and proteins for 
+the analysis of COVID-19 status. The formulae applied is described in the
+Methods section of the associated publication (XX) under the heading 
+"Differential expression analysis: COVID-19 positive versus negative".
+
+## RNA-seq analysis using dream
+
+In order to analyse the effect of COVID-19 status on the expression of individual
+genes, we have used the `dream` function from the `variancePartition` package. 
+
+The function `normalize_se` applies normalisation using edgeR. The `normalisation_level`
+argument is set to "pre_dream" in order to retrieve the data in the correct
+format for dream. The `group` argument is set to COVID-19 status, which is 
+passed to the `group` argument of `edgeR::filterByExpr`.
+
+The `run_dream` function is used to apply dream to compare
+the expression of genes based on COVID-19 status. 
+
+The analysis is performed for each of the Wave 1 and Wave 2 cohorts.
 
 ### Wave 1 transcriptomic COVID-19 infected vs. non-infected comparison
 
@@ -119,8 +147,8 @@ wave1_case_control_de <- run_dream(
 )
 
 write.csv(
-    wave1_case_control_de$case_control_tt, 
-    "../results/1_differential_expression/wave_1/gene_negative_vs_positive.csv", 
+    wave1_case_control_de$case_control_tt,
+    "../results/1_differential_expression/wave_1/gene_negative_vs_positive.csv",
     row.names = FALSE
 )
 
@@ -160,6 +188,10 @@ print(head(wave2_case_control_de$case_control_tt))
 
 ### Wave 2 transcriptomic COVID-19 recovery vs. pre-infection comparison
 
+In addition to comparing COVID-19 positive and negative individuals, we were able
+to compare pre-infection samples to samples taken after recovery from COVID-19 for
+twelve of the patients of the Wave 2 cohort.
+
 ```{r wave2_preinfection_recovery_gene_de, message=FALSE, warning=FALSE, fig.show='hide'}
 
 # only NEGATIVE (pre-infection) and RECOVERY samples are compared in this analysis
@@ -195,12 +227,20 @@ print(head(wave2_recovery_de$case_control_tt))
 
 ```
 
-## Proteomic analysis using dream and GSVA
+## Proteomic analysis using lmerTest
+
+We analysed the effect of COVID-19 status on individuals proteins using linear
+mixed models applied using the `lmerTest` package. This is a similar analytical
+strategy to that applied to individual genes, however the `variancePartition::dream`
+function applies parameter sharing. 
+
+The analysis is performed for each of the Wave 1 and Wave 2 cohorts.
 
 ### Wave 1 proteomic COVID-19 infected vs. non-infected comparison
 
 ```{r wave1_case_control_prot_de, message=FALSE, warning=FALSE, fig.show='hide'}
 
+# fit linear mixed models for proteins
 wave1_case_control_models <- soma_de(
   soma_long = wave1_soma,
   formula_string = "RFU ~ case_control + sex + ethnicity + calc_age + (1 | individual_id)"
@@ -249,6 +289,7 @@ head(wave1_case_control_df[wave1_case_control_df$term == "case_control" ,])
 
 ```{r wave2_case_control_prot_de, message=FALSE, warning=FALSE, fig.show='hide'}
 
+# fit linear mixed models for proteins
 wave2_case_control_models <- soma_de(
   soma_long = wave2_soma,
   formula_string = "RFU ~ case_control + sex + ethnicity + calc_age + (1 | individual_id)"
@@ -265,21 +306,33 @@ head(wave2_case_control_df[wave2_case_control_df$term == "case_control" ,])
 
 # Differential expression analyses of COVID-19 severity at time of sampling
 
-## RNA-seq
+In addition to exploring the effect of COVID-19 status on gene expression and 
+protein abundance, we modelled COVID-19 severity at time of sampling. Severity
+(`WHO_temp_severity`) is encoded as an ordered factor. By default, polynomial 
+contrasts (`?contr.poly`) are generated for ordered factors, meaning that the
+linear mixed models consider severity to be an ordinal variable.
+
+## RNA-seq analysis using dream
+
+Like for the analysis of COVID-19 status, we explored the expression of 
+individual genes using `variancePartition::dream`. The analysis was run for 
+each cohort separately. Only COVID-19 positive samples were modelled in this analysis.
 
 ### Wave 1 transcriptomic COVID-19 severity analysis
 
 ```{r wave1_severity_gene_de, message=FALSE, warning=FALSE, fig.show='hide'}
 
+# convert contemporaneous severity to an ordered factor
 wave1_counts$WHO_temp_severity <- ordered(wave1_counts$WHO_temp_severity, c("mild", "moderate", "severe", "critical"))
 
+# get the normalised dataset for COVID-19 cases
 wave1_severity_dge <- normalize_se(
   wave1_counts[, wave1_counts$case_control == "POSITIVE" & !is.na(wave1_counts$WHO_temp_severity)],
   normalisation_level = "pre_dream",
   group = "WHO_temp_severity"
 )
 
-# run the differential expression
+# run dream differential expression analysis (from variancePartition package)
 wave1_severity_de <- run_dream(
   f = ~ WHO_temp_severity + sex + ethnicity + calc_age + (1 | individual_id),
   dge = wave1_severity_dge,
@@ -301,15 +354,17 @@ print(head(wave1_severity_de$WHO_temp_severity_tt))
 
 ```{r wave2_severity_gene_de, message=FALSE, warning=FALSE, fig.show='hide'}
 
+# convert contemporaneous severity to an ordered factor
 wave2_counts$WHO_temp_severity <- ordered(wave2_counts$WHO_temp_severity, c("mild", "moderate", "severe", "critical"))
 
+# get the normalised dataset for COVID-19 cases
 wave2_severity_dge <- normalize_se(
   wave2_counts[, wave2_counts$case_control == "POSITIVE" & !is.na(wave2_counts$WHO_temp_severity)],
   normalisation_level = "pre_dream",
   group = "WHO_temp_severity"
 )
 
-# run the differential expression
+# run dream differential expression analysis (from variancePartition package)
 wave2_severity_de <- run_dream(
   f = ~ WHO_temp_severity + sex + ethnicity + calc_age + (1 | individual_id),
   dge = wave2_severity_dge,
@@ -329,13 +384,21 @@ print(head(wave2_severity_de$WHO_temp_severity_tt))
 
 ## Proteomics
 
+We then analysed the effect of 4-level COVID-19 WHO severity on the abundance of
+individual proteins using linear mixed models. As before, the analysis was applied
+to each cohort separately.
+
 ### Wave 1 proteomic COVID-19 severity analysis
 
 ```{r wave1_severity_prot_de, message=FALSE, warning=FALSE, fig.show='hide'}
 
+# convert contemporaneous severity to an ordered factor
 wave1_soma$WHO_temp_severity <- ordered(wave1_soma$WHO_temp_severity, c("mild", "moderate", "severe", "critical"))
+
+# get dataset for COVID-19 cases
 wave1_soma_positive <- wave1_soma[wave1_soma$case_control == "POSITIVE" & !is.na(wave1_soma$WHO_temp_severity) ,]
 
+# fit linear mixed models for proteins
 wave1_severity_models <- soma_de(
   soma_long = wave1_soma_positive,
   formula_string = "RFU ~ WHO_temp_severity + sex + ethnicity + calc_age + (1 | individual_id)"
@@ -354,10 +417,13 @@ head(wave1_severity_df[wave1_severity_df$term == "WHO_temp_severity" ,])
 
 ```{r wave2_severity_prot_de, message=FALSE, warning=FALSE, fig.show='hide'}
 
+# convert contemporaneous severity to an ordered factor
 wave2_soma$WHO_temp_severity <- ordered(wave2_soma$WHO_temp_severity, c("mild", "moderate", "severe", "critical"))
+
+# get dataset for COVID-19 cases
 wave2_soma_severity <- wave2_soma[wave2_soma$case_control == "POSITIVE" & !is.na(wave2_soma$WHO_temp_severity) ,]
 
-
+# fit linear mixed models for proteins
 wave2_severity_models <- soma_de(
   soma_long = wave2_soma_severity,
   formula_string = "RFU ~ WHO_temp_severity + sex + ethnicity + calc_age + (1 | individual_id)"
@@ -372,7 +438,10 @@ head(wave2_severity_df[wave2_severity_df$term == "WHO_temp_severity" ,])
 
 ```
 
+# Session info
+
+Session information collected at the point this markdown document was knit.
+
 ```{r session_info}
 sessionInfo()
 ```
-

@@ -122,7 +122,6 @@
 "C138_recovery","C138","asian","F",77,"no","no","no","yes.T2","not.current","DN (bx or presumed)","moderate",NA,FALSE,"RECOVERY","yes:patchybilateralconsolidation",42,47
 "C139_recovery","C139","white","M",85,"no","no","no","no","not.current","Unknown","severe",NA,FALSE,"RECOVERY","yes;patchyopacificationbothlungfields",55,54
 "C140_recovery","C140","asian","F",23,"no","no","no","no","not.current","Unknown","mild",NA,FALSE,"RECOVERY","no",47,44
-"C141_recovery","C141","black","M",85,"yes.stent","no","no","no","not.current","Unknown","severe",NA,TRUE,"RECOVERY","yes",55,52
 "C146_recovery","C146","asian","M",66,"yes.cabg","no","no","yes.T2","not.current","DN (bx or presumed)","severe",NA,TRUE,"RECOVERY","yes:Leftbasalinfiltrate",35,47
 "C168_recovery","C168","asian","M",75,"no","no","no","yes.T2","not.current","DN (bx or presumed)","mild",NA,FALSE,"RECOVERY","no",NA,47
 "C169_recovery","C169","asian","F",73,"yes.no.intervention","no","no","no","not.current","Unknown","mild",NA,FALSE,"RECOVERY","no",NA,47

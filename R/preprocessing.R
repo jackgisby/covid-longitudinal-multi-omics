@@ -46,10 +46,10 @@ get_summarized_experiment <- function(
     
     # get gene ids from ensembl ids via biomart
     if (is.null(mart)) {
-        mart <- useDataset("hsapiens_gene_ensembl", useMart("ensembl"))
+        mart <- useDataset("hsapiens_gene_ensembl", useMart(dataset = "ensembl"))
     }
-    
-    ensembl_to_geneid <- getBM(filters="ensembl_gene_id", attributes=c("ensembl_gene_id","hgnc_symbol"), values=ensembl_ids, mart=mart)
+
+    ensembl_to_geneid <- getBM(filters = "ensembl_gene_id", attributes = c("ensembl_gene_id", "hgnc_symbol"), values = ensembl_ids, mart = mart)
     ensembl_to_geneid <- ensembl_to_geneid[which(!duplicated(ensembl_to_geneid$ensembl_gene_id)) ,]
     
     count_row_names_joined <- dplyr::left_join(data.frame(gencode_id=gencode_ids, ensembl_id=ensembl_ids), ensembl_to_geneid, by = c("ensembl_id"="ensembl_gene_id"))
@@ -121,12 +121,18 @@ get_summarized_experiment <- function(
         
         if (max_time == "swab") {
             
-            # se_object$date_first_x[i] <- se_object$date_first_positive_swab[i]
+            if ("date_first_x" %in% colnames(data.frame(colData(se_object)))) {
+                se_object$date_first_x[i] <- se_object$date_first_positive_swab[i]
+            }
+            
             se_object$time_from_first_x[i] <- se_object$time_from_first_positive_swab[i]
             
         } else {
             
-            # se_object$date_first_x[i] <- se_object$date_first_symptoms[i]
+            if ("date_first_x" %in% colnames(data.frame(colData(se_object)))) {
+                se_object$date_first_x[i] <- se_object$date_first_symptoms[i]
+            }
+            
             se_object$time_from_first_x[i] <- se_object$time_from_first_symptoms[i]
         }
     }
@@ -359,12 +365,17 @@ get_soma_data <- function(soma_abundance, sample_meta, sample_technical_meta, fe
         
         if (max_time == "swab") {
             
-            # combined_meta$date_first_x[i] <- combined_meta$date_first_positive_swab[i]
+            if ("date_first_x" %in% colnames(combined_meta)) {
+                combined_meta$date_first_x[i] <- combined_meta$date_first_positive_swab[i]
+            }
             combined_meta$time_from_first_x[i] <- combined_meta$time_from_first_positive_swab[i]
             
         } else {
             
-            # combined_meta$date_first_x[i] <- combined_meta$date_first_symptoms[i]
+            if ("date_first_x" %in% colnames(combined_meta)) {
+                combined_meta$date_first_x[i] <- combined_meta$date_first_symptoms[i]
+            }
+            
             combined_meta$time_from_first_x[i] <- combined_meta$time_from_first_symptoms[i]
         }
     }

@@ -10,7 +10,17 @@ output:
     fig_height: 7
 ---
 
-```{r}
+# Load data and code
+## Load packages and custom functions
+
+This chunk loads packages required for the notebook in addition to custom
+functions in the `../R` directory. These include functions for loading data,
+running differential expression and enrichment analyses and making plots. The
+main functions and their arguments are described by comments within these files.
+
+```{r load_functions, message=FALSE, warning=FALSE}
+
+# load relevant packages
 library(SummarizedExperiment)
 library(data.table)
 library(edgeR)
@@ -19,12 +29,41 @@ library(caret)
 library(biomaRt)
 library(rmcorr)
 
+# set up plotting settings
+library(ggplot2)
+library(ggpubr)
+
+theme_set(theme_pubr(border = TRUE))
+theme_update(text = element_text(size = 8))
+
+# load custom functions from the R/ directory
 source("../R/preprocessing.R")
 source("../R/de.R")
+
+set.seed(1)
+
 ```
 
-```{r load_data}
+## Load normalised datasets
 
+For the supervised learning analysis, we loaded and normalised the transcriptomic
+and proteomic datasets as we have done in the previous notebooks 
+(`1_differential_expression.Rmd`, `2_gsva_analysis.Rmd`). However, we additionally
+did the following prior to analysis:
+ - Removed samples that did not have both RNA-seq and protein data available
+ - Selected one sample for each individual, such that we picked the earliest
+ timepoint at which they had reached their peak COVID-19 severity
+ - For the RNA-seq data, we normalised both waves simultaneously rather than
+ separately.
+ - Removed duplicate aptamers that measured the same protein target.
+ - Removed genes with low variance (33% of genes with the lowest variance).
+ 
+The normalised data were saved in this repository (`results/3_supervised_learning/collated_data`)
+and are loaded in the chunk below. 
+
+```{r load_data, message=FALSE, warning=FALSE}
+
+# get normalised data for: i) proteomics; ii) RNA-seq; iii) both modalities. 
 input_data <- list(
     "prot" = read.csv("../results/3_supervised_learning/collated_data/prot_input_data.csv"),
     "rna" = read.csv("../results/3_supervised_learning/collated_data/rna_input_data.csv"),
@@ -33,30 +72,49 @@ input_data <- list(
 
 ```
 
-```{r}
+# Train models for COVID-19 severity
 
+## Model generation
+
+In this chunk, we generate models for each data modality (genes, proteins and 
+both genes and proteins). Models are generated for 200 resamples using an
+80:20 split; caret is used to fit random forests and lasso models. 
+
+As part of this training, caret centers and scales the data, fits the models and 
+calculates area under the receiver operating characteristic curve (AUC-ROC) for
+each resample. The AUC evaluates the model's ability to discriminate between severe/critical
+and mild/moderate disease.
+
+```{r train_models, message=FALSE, warning=FALSE}
+
+# number of cross-validation iterations
 num_resamples <- 200
 
+# for each data modality
 for (model_type in c("prot", "rna", "both")) {
     
     print(paste0("------------------------- ", model_type))
     
+    # model tuning parameters
     tuneGrid <- list(
         "rf" = data.frame(mtry = floor(sqrt(ncol(input_data[[model_type]]) - 1))), 
         "glmnet" = data.frame(alpha = 1, lambda = seq(0, 1, length = 1000))
     )
     
+    # create cross-validation data partitions
     set.seed(1)
     resamples <- createDataPartition(input_data[[model_type]]$.outcome, p = 0.8, times = num_resamples)
     
     trained_model <- list()
     
+    # for each of: i) random forests; ii) lasso.
     for (algo in c("rf", "glmnet")) {
         
         print(paste0("---------- ", algo))
         
         set.seed(1)
         
+        # train the models using caret
         trained_model[[algo]] <- train(
             x = dplyr::select(input_data[[model_type]], -.outcome), 
             y = input_data[[model_type]]$.outcome, 
@@ -78,44 +136,60 @@ for (model_type in c("prot", "rna", "both")) {
             )
         )
         
+        # save the model
         saveRDS(trained_model[[algo]], paste0("../results/3_supervised_learning/", model_type, "_", algo, "_model.rds"))
     }
 }
 
 ```
 
-```{r}
+## Summarise performance
+
+In this chunk, we load the trained caret models and extract the AUC for each 
+resample. We then calculate the mean and standard deviation of the AUC across
+the resamples for each data modality (proteomics, transcriptomics and both) and 
+supervised learning algorithm (random forests, lasso).
+
+```{r calculate_aucs, message=FALSE, warning=FALSE}
 
 model_details <- data.frame()
 
+# for each data modality
 for (model_type in c("both", "rna", "prot")) {
     
     print(paste0("------------------------- ", model_type))
-
+    
+    # for each of: i) random forests; ii) lasso.
     for (algo in c("rf", "glmnet")) {
         
         print(paste0("---------- ", algo))
         
+        # read in the trained model
         trained_model <- readRDS(paste0("../results/3_supervised_learning/", model_type, "_", algo, "_model.rds"))
         
+        # which model had the best AUC?
         best_model_idx <- which.max(trained_model$results$ROC)
         
         roc_iterations <- data.frame()
         
         num_resamples <- length(unique(trained_model$pred$Resample))
         
+        # for each resample
         for (resample in unique(trained_model$pred$Resample)) {
 
             resample_data <- trained_model$pred[trained_model$pred$Resample == resample ,]
             
+            # in the case of lasso: which model had the best lambda?
             if (algo == "glmnet") {
                 resample_data <- resample_data[resample_data$lambda == trained_model$bestTune$lambda ,]
             }
-
+            
+            # calculate the AUC
             roc_obj <- pROC::roc(resample_data$obs, resample_data$severe_critical, levels = c("mild_moderate", "severe_critical"), direction = "<")
             roc_iterations <- rbind(roc_iterations, data.frame(resample = resample, auc = roc_obj$auc[1]))
         }
         
+        # collate the data
         model_details <- rbind(model_details, data.frame(
             model_type = model_type,
             algo = algo,
@@ -126,6 +200,7 @@ for (model_type in c("both", "rna", "prot")) {
     }
 }
 
+# calculate confidence intervals
 model_details$sem <- model_details$roc_sd / sqrt(model_details$resamples)
 model_details$lower <- model_details$roc - (1.96 * model_details$sem)
 model_details$upper <- model_details$roc + (1.96 * model_details$sem)
@@ -135,12 +210,28 @@ write.csv(model_details, "../results/3_supervised_learning/model_details.csv")
 
 model_details$model_type <- factor(model_details$model_type, c("prot", "both", "gene"))
 
+```
+
+Confidence intervals for the lasso AUC across resampling iterations, stratified by
+data modality.
+
+```{r plot_lasso_aucs, message=FALSE, warning=FALSE}
+
+# plot the AUC for each data modality (lasso)
 glmnet_auc_comparison <- ggplot(model_details[model_details$algo == "glmnet" ,], aes(model_type, roc)) +
     geom_point(position = position_dodge(width = 0.9), size = 0.7) +
     geom_errorbar(aes(ymin = lower, ymax = upper), position = "dodge", width = 0.5)
 
 glmnet_auc_comparison
 
+```
+
+Confidence intervals for the random forests AUC across resampling iterations, stratified by
+data modality.
+
+```{r plot_rf_aucs, message=FALSE, warning=FALSE}
+
+# plot the AUC for each data modality (random forests)
 rf_auc_comparison <- ggplot(model_details[model_details$algo == "rf" ,], aes(model_type, roc)) +
     geom_point(position = position_dodge(width = 0.9), size = 0.7) +
     geom_errorbar(aes(ymin = lower, ymax = upper), position = "dodge", width = 0.5)
@@ -148,6 +239,10 @@ rf_auc_comparison <- ggplot(model_details[model_details$algo == "rf" ,], aes(mod
 rf_auc_comparison
 
 ```
+
+# Session info
+
+Session information collected at the point this markdown document was knit.
 
 ```{r session_info}
 

@@ -13,19 +13,27 @@ output:
 # Load data and code
 ## Load packages and custom functions
 
-Custom functions for loading data, running differential expression and 
-enrichment analyses, and making plots can be found in the `../R` directory. The 
-main functions and their arguments are described by comments within these files. 
+This chunk loads packages required for the notebook in addition to custom
+functions in the `../R` directory. These include functions for loading data,
+running differential expression and enrichment analyses and making plots. The
+main functions and their arguments are described by comments within these files.
 
-```{r load_functions}
+```{r load_functions, message=FALSE, warning=FALSE}
 
-# load necessary packages
+# load relevant packages
 library(data.table)
 library(SummarizedExperiment)
 library(lmerTest)
 library(GSVA)
 library(biomaRt)
 library(edgeR)
+
+# set up plotting settings
+library(ggplot2)
+library(ggpubr)
+
+theme_set(theme_pubr(border = TRUE))
+theme_update(text = element_text(size = 8))
 
 # load custom functions from the R/ directory
 source("../R/preprocessing.R")
@@ -41,12 +49,12 @@ The raw RNA-seq counts are loaded, transformed into `SummarizedExperiment` objec
 and split into the "Wave 1" and "Wave 2" cohorts. `SnowParam` is also initialised
 for the differential expression analysis using the `variancePartition` package.
 
-```{r load_rna_data, message=FALSE, warning=FALSE}
+```{r load_rna_data, message=FALSE, warning=FALSE, fig.show='hide'}
 
 # get the raw RNA-seq counts
 htseq_counts <- data.frame(fread("../data/htseq_counts.csv"))
 
-mart <- useDataset("hsapiens_gene_ensembl", useMart("ensembl"))
+mart <- useDataset("hsapiens_gene_ensembl", useMart("ensembl", host="uswest.ensembl.org"))
 
 # get the wave 1 and wave 2 counts and their associated metadata
 wave1_counts <- get_summarized_experiment(
@@ -65,10 +73,10 @@ wave2_counts <- get_summarized_experiment(
 
 ## Load SOMA protein data
 
-The SOMA data is loaded into long format and split into the "Wave 1" and 
-"Wave 2" cohorts.
+The SOMA data is loaded into wide format (a matrix of samples x proteins) and 
+split into the "Wave 1" and "Wave 2" cohorts by the `get_soma_data` function. 
 
-```{r load_prot_data, message=FALSE, warning=FALSE}
+```{r load_prot_data, message=FALSE, warning=FALSE, fig.show='hide'}
 
 wave1_soma <- get_soma_data(
   soma_abundance = "../../data/20210819_soma_processed/soma_abundances.csv", 
@@ -78,10 +86,12 @@ wave1_soma <- get_soma_data(
   ret_wide = TRUE
 )
 
+# convert column names from sequence IDs to gene IDs
 colnames(wave1_soma$soma_abundance) <- sapply(colnames(wave1_soma$soma_abundance), function(cname) {
   wave1_soma$feature_meta$gene_id[wave1_soma$feature_meta$converted_seq_ids == cname]
 }) 
 
+# remove duplicated genes
 wave1_soma$soma_abundance <- wave1_soma$soma_abundance[, !duplicated(colnames(wave1_soma$soma_abundance))]
 wave1_soma$feature_meta <- wave1_soma$feature_meta[!duplicated(wave1_soma$feature_meta$converted_seq_ids) ,]
 
@@ -93,10 +103,12 @@ wave2_soma <- get_soma_data(
   ret_wide = TRUE
 )
 
+# convert column names from sequence IDs to gene IDs
 colnames(wave2_soma$soma_abundance) <- sapply(colnames(wave2_soma$soma_abundance), function(cname) {
   wave2_soma$feature_meta$gene_id[wave2_soma$feature_meta$converted_seq_ids == cname]
 }) 
 
+# remove duplicated genes
 wave2_soma$soma_abundance <- wave2_soma$soma_abundance[, !duplicated(colnames(wave2_soma$soma_abundance))]
 wave2_soma$feature_meta <- wave2_soma$feature_meta[!duplicated(wave2_soma$feature_meta$converted_seq_ids) ,]
 
@@ -104,22 +116,33 @@ wave2_soma$feature_meta <- wave2_soma$feature_meta[!duplicated(wave2_soma$featur
 
 ## Setup Gene Set Variation Analysis 
 
-```{r gsva, message=FALSE, warning=FALSE}
+We use the MsigDB C2 gene sets to create a GeneSetCollection object for GSVA.
 
-# gsc.file <- scan("data/20210811_gsva/c2.cp.v7.4.symbols.edited.txt", what = "", sep="\n")
-# gsclist <- strsplit(gsc.file, "[[:space:]]+")
-# names(gsclist) <- sapply(gsclist, `[[`, 1)
-# 
-# gsclist <- lapply(gsclist, `[`, -1)
-# gsclist <- lapply(gsclist, `[`, -1)
-# 
-# uniqueList <- lapply(gsclist, unique)
-# 
-# makeSet <- function(geneIds, n) {GeneSet(geneIds, geneIdType=SymbolIdentifier(), setName=n)}
-# gsclist <- mapply(makeSet, uniqueList[], names(gsclist))
-# 
-# gsc <- GeneSetCollection(gsclist)
+The symbols file has been edited to include two additional gene sets.
 
+```{r generate_gsva_object, message=FALSE, warning=FALSE, eval=FALSE, include=TRUE}
+
+# reads msigdb release 7.4 symbols, edited to include two additional modules
+gsc.file <- scan("data/20210811_gsva/c2.cp.v7.4.symbols.edited.txt", what = "", sep="\n")
+gsclist <- strsplit(gsc.file, "[[:space:]]+")
+names(gsclist) <- sapply(gsclist, `[[`, 1)
+
+gsclist <- lapply(gsclist, `[`, -1)
+gsclist <- lapply(gsclist, `[`, -1)
+
+uniqueList <- lapply(gsclist, unique)
+
+makeSet <- function(geneIds, n) {GeneSet(geneIds, geneIdType=SymbolIdentifier(), setName=n)}
+gsclist <- mapply(makeSet, uniqueList[], names(gsclist))
+
+gsc <- GeneSetCollection(gsclist)
+
+```
+
+```{r load_gsva_object, eval=TRUE, include=FALSE}
+
+# instead of reading in the GSVA modules in the notebook,
+# just read a copy saved as an RDS
 gsc <- readRDS("../results/2_gsva_analysis/terms.r")
 
 ```
@@ -127,7 +150,17 @@ gsc <- readRDS("../results/2_gsva_analysis/terms.r")
 
 # Differential expression analyses of COVID-19 status
 
+The differential expression analyses performed in this document are essentially
+identical to the analyses performed in the `1_differential_expression.Rmd` notebook,
+however here we analyse gene sets rather than individual genes and proteins. 
+
+We also do not compare pre-infection and recovery samples using GSVA. 
+
 ## RNA-seq analysis using dream and GSVA
+
+In this section, we calculate the gene set x sample matrix for each cohort and
+compare COVID-19 positive vs. negative samples for each cohort using linear
+mixed models.
 
 ### Wave 1 transcriptomic COVID-19 infected vs. non-infected comparison
 
@@ -140,9 +173,11 @@ wave1_case_control_se <- normalize_se(
   group = "case_control"
 )
 
+# remove duplicated genes
 wave1_case_control_se <- wave1_case_control_se[!duplicated(rowData(wave1_case_control_se)$gene_id), ]
 rownames(wave1_case_control_se) <- rowData(wave1_case_control_se)$gene_id
 
+# calculate GSVA (gene set x samples matrix)
 wave1_case_control_eset <- gsva(
   assay(wave1_case_control_se, 2), 
   gsc, 
@@ -151,12 +186,14 @@ wave1_case_control_eset <- gsva(
   parallel.sz = 8
 )
 
+# apply linear mixed models to gene sets
 wave1_case_control_eset_models <- eset_de(
   se = wave1_case_control_se,
   eset = wave1_case_control_eset,
   formula_string = "set_expr ~ case_control + sex + ethnicity + calc_age + (1 | individual_id)"
 )
 
+# function to convert list of models to table of results
 get_eset_results <- function(models, wave, data_type, comparison) {
     
     eset_de <- data.frame()
@@ -191,9 +228,6 @@ get_eset_results <- function(models, wave, data_type, comparison) {
 
 wave1_case_control_eset_de <- get_eset_results(wave1_case_control_eset_models, 1, "gene", "negative_vs_positive")
 
-wave1_case_control_adjusted_pvals <- p.adjust(sapply(wave1_case_control_eset_models, function(model) {anova(model)$`Pr(>F)`[1]}), method = "BH")
-stopifnot(sum(wave1_case_control_adjusted_pvals < 0.05) == 941)
-
 ```
 
 ### Wave 2 transcriptomic COVID-19 infected vs. pre-infection comparison
@@ -207,9 +241,11 @@ wave2_case_control_se <- normalize_se(
   group = "case_control"
 )
 
+# remove duplicated genes
 wave2_case_control_se <- wave2_case_control_se[!duplicated(rowData(wave2_case_control_se)$gene_id), ]
 rownames(wave2_case_control_se) <- rowData(wave2_case_control_se)$gene_id
 
+# calculate GSVA (gene set x samples matrix)
 wave2_case_control_eset <- gsva(
   assay(wave2_case_control_se, 2), 
   gsc, 
@@ -218,6 +254,7 @@ wave2_case_control_eset <- gsva(
   parallel.sz = 8
 )
 
+# apply linear mixed models to gene sets
 wave2_case_control_eset_models <- eset_de(
   se = wave2_case_control_se,
   eset = wave2_case_control_eset,
@@ -226,18 +263,22 @@ wave2_case_control_eset_models <- eset_de(
 
 wave2_case_control_eset_de <- get_eset_results(wave2_case_control_eset_models, 2, "gene", "negative_vs_positive")
 
-wave2_case_control_adjusted_pvals <- p.adjust(sapply(wave2_case_control_eset_models, function(model) {anova(model)$`Pr(>F)`[1]}), method = "BH")
-stopifnot(sum(wave2_case_control_adjusted_pvals < 0.05) == 1196)
-
 ```
+
 ## Proteomic analysis using GSVA
+
+As for the transcriptomic data, we use GSVA to summarise the proteomics data into
+sets of proteins, then use linear mixed models to associate them with COVID-19
+status.
 
 ### Wave 1 proteomic COVID-19 infected vs. non-infected comparison
 
-```{r, message=FALSE, warning=FALSE}
+```{r wave1_case_control_prot_gsva, message=FALSE, warning=FALSE}
 
+# apply GSVA to protein matrix
 wave1_case_control_pset <- gsva(t(wave1_soma$soma_abundance), gsc, min.sz = 10, max.sz = Inf, verbose = TRUE, parallel.sz = 8)
 
+# apply linear mixed models to protein sets
 wave1_case_control_pset_models <- pset_de(
   se = t(wave1_soma$soma_abundance),
   pset = wave1_case_control_pset,
@@ -247,17 +288,16 @@ wave1_case_control_pset_models <- pset_de(
 
 wave1_case_control_pset_de <- get_eset_results(wave1_case_control_pset_models, 1, "protein", "negative_vs_positive")
 
-wave1_case_control_adjusted_pvals <- p.adjust(sapply(wave1_case_control_pset_models, function(model) {anova(model)$`Pr(>F)`[1]}), method = "BH")
-stopifnot(sum(wave1_case_control_adjusted_pvals < 0.05) == 552)
-
 ```
 
 ### Wave 2 proteomic COVID-19 infected vs. non-infected comparison
 
-```{r, message=FALSE, warning=FALSE}
+```{r wave2_case_control_prot_gsva, message=FALSE, warning=FALSE}
 
+# apply GSVA to protein matrix
 wave2_case_control_pset <- gsva(t(wave2_soma$soma_abundance), gsc, min.sz = 10, max.sz = Inf, verbose = TRUE, parallel.sz = 8)
 
+# apply linear mixed models to protein sets
 wave2_case_control_pset_models <- pset_de(
   se = t(wave2_soma$soma_abundance),
   pset = wave2_case_control_pset,
@@ -267,20 +307,25 @@ wave2_case_control_pset_models <- pset_de(
 
 wave1_case_control_pset_de <- get_eset_results(wave2_case_control_pset_models, 2, "protein", "negative_vs_positive")
 
-wave1_case_control_adjusted_pvals <- p.adjust(sapply(wave2_case_control_pset_models, function(model) {anova(model)$`Pr(>F)`[1]}), method = "BH")
-stopifnot(sum(wave1_case_control_adjusted_pvals < 0.05) == 1459)
-
 ```
+
 # Differential expression analyses of COVID-19 severity at time of sampling
+
+Like the analyses performed in the `1_differential_expression.Rmd` notebook, we 
+analyse COVID-19 positive samples by ordinal contemporaneous severity. However,
+in this case we analyse gene and proteins sets rather than individual genes and 
+proteins.
 
 ## RNA-seq analysis using GSVA
 
 ### Wave 1 transcriptomic COVID-19 severity analysis
 
-```{r, message=FALSE, warning=FALSE}
+```{r wave1_severity_gene_gsva, message=FALSE, warning=FALSE}
 
+# convert contemporaneous severity to an ordered factor
 wave1_counts$WHO_temp_severity <- ordered(wave1_counts$WHO_temp_severity, c("mild", "moderate", "severe", "critical"))
 
+# get normalised expression matrix for COVID-19 positive samples
 wave1_severity_se <- normalize_se(
   wave1_counts[, wave1_counts$case_control == "POSITIVE" & !is.na(wave1_counts$WHO_temp_severity)],
   normalisation_level = "logcpm",
@@ -290,8 +335,10 @@ wave1_severity_se <- normalize_se(
 wave1_severity_se <- wave1_severity_se[!duplicated(rowData(wave1_severity_se)$gene_id), ]
 rownames(wave1_severity_se) <- rowData(wave1_severity_se)$gene_id
 
+# calculate GSVA to gene expression matrix
 wave1_severity_eset <- gsva(assay(wave1_severity_se, 2), gsc, min.sz = 10, max.sz = Inf, verbose = TRUE, parallel.sz = 8)
 
+# apply linear mixed models to gene sets
 wave1_severity_eset_models <- eset_de(
   se = wave1_severity_se,
   eset = wave1_severity_eset,
@@ -300,17 +347,16 @@ wave1_severity_eset_models <- eset_de(
 
 wave1_severity_eset_de <- get_eset_results(wave1_severity_eset_models, 1, "gene", "severity")
 
-wave1_severity_adjusted_pvals <- p.adjust(sapply(wave1_severity_eset_models, function(model) {anova(model)$`Pr(>F)`[1]}), method = "BH")
-stopifnot(sum(wave1_severity_adjusted_pvals < 0.05) == 710)
-
 ```
 
 ### Wave 2 transcriptomic COVID-19 severity analysis
 
-```{r, message=FALSE, warning=FALSE}
+```{r wave2_severity_gene_gsva, message=FALSE, warning=FALSE}
 
+# convert contemporaneous severity to an ordered factor
 wave2_counts$WHO_temp_severity <- ordered(wave2_counts$WHO_temp_severity, c("mild", "moderate", "severe", "critical"))
 
+# get normalised expression matrix for COVID-19 positive samples
 wave2_severity_se <- normalize_se(
   wave2_counts[, wave2_counts$case_control == "POSITIVE" & !is.na(wave2_counts$WHO_temp_severity)],
   normalisation_level = "logcpm",
@@ -320,8 +366,10 @@ wave2_severity_se <- normalize_se(
 wave2_severity_se <- wave2_severity_se[!duplicated(rowData(wave2_severity_se)$gene_id), ]
 rownames(wave2_severity_se) <- rowData(wave2_severity_se)$gene_id
 
+# calculate GSVA to gene expression matrix
 wave2_severity_eset <- gsva(assay(wave2_severity_se, 2), gsc, min.sz = 10, max.sz = Inf, verbose = TRUE, parallel.sz = 8)
 
+# apply linear mixed models to gene sets
 wave2_severity_eset_models <- eset_de(
   se = wave2_severity_se,
   eset = wave2_severity_eset,
@@ -330,27 +378,28 @@ wave2_severity_eset_models <- eset_de(
 
 wave2_severity_eset_de <- get_eset_results(wave2_severity_eset_models, 2, "gene", "severity")
 
-wave2_severity_adjusted_pvals <- p.adjust(sapply(wave2_severity_eset_models, function(model) {anova(model)$`Pr(>F)`[1]}), method = "BH")
-stopifnot(sum(wave2_severity_adjusted_pvals < 0.05) == 176)
-
 ```
 
 ## Proteomic analysis using GSVA
 
 ### Wave 1 proteomic COVID-19 severity analysis
 
-```{r, message=FALSE, warning=FALSE}
+```{r wave1_severity_prot_gsva, message=FALSE, warning=FALSE}
 
+# remove negative samples from protein matrix
 pos_ids <- wave1_soma$sample_meta$sample_id[wave1_soma$sample_meta$case_control == "POSITIVE"]
 
 wave1_soma_sev <- wave1_soma
 wave1_soma_sev$soma_abundance <- wave1_soma_sev$soma_abundance[rownames(wave1_soma_sev$soma_abundance) %in% pos_ids ,]
 wave1_soma_sev$sample_meta <- wave1_soma_sev$sample_meta[wave1_soma_sev$sample_meta$sample_id %in% pos_ids ,]
 
+# convert contemporaneous severity to an ordered factor
 wave1_soma_sev$sample_meta$WHO_temp_severity <- ordered(wave1_soma_sev$sample_meta$WHO_temp_severity, c("mild", "moderate", "severe", "critical"))
 
+# calculate GSVA to protein matrix
 wave1_severity_pset <- gsva(t(wave1_soma_sev$soma_abundance), gsc, min.sz = 10, max.sz = Inf, verbose = TRUE, parallel.sz = 8)
 
+# apply linear mixed models to protein sets
 wave1_severity_pset_models <- pset_de(
   se = t(wave1_soma_sev$soma_abundance),
   col_data = wave1_soma_sev$sample_meta,
@@ -360,25 +409,26 @@ wave1_severity_pset_models <- pset_de(
 
 wave1_severity_pset_de <- get_eset_results(wave1_severity_pset_models, 1, "protein", "severity")
 
-wave1_severity_adjusted_pvals <- p.adjust(sapply(wave1_severity_pset_models, function(model) {anova(model)$`Pr(>F)`[1]}), method = "BH")
-stopifnot(sum(wave1_severity_adjusted_pvals < 0.05) == 32)
-
 ```
 
 ### Wave 2 proteomic COVID-19 severity analysis
 
-```{r, message=FALSE, warning=FALSE}
+```{r wave2_severity_prot_gsva, message=FALSE, warning=FALSE}
 
+# remove negative samples from protein matrix
 pos_ids <- wave2_soma$sample_meta$sample_id[wave2_soma$sample_meta$case_control == "POSITIVE"]
 
 wave2_soma_sev <- wave2_soma
 wave2_soma_sev$soma_abundance <- wave2_soma_sev$soma_abundance[rownames(wave2_soma_sev$soma_abundance) %in% pos_ids ,]
 wave2_soma_sev$sample_meta <- wave2_soma_sev$sample_meta[wave2_soma_sev$sample_meta$sample_id %in% pos_ids ,]
 
+# convert contemporaneous severity to an ordered factor
 wave2_soma_sev$sample_meta$WHO_temp_severity <- ordered(wave2_soma_sev$sample_meta$WHO_temp_severity, c("mild", "moderate", "severe", "critical"))
 
+# calculate GSVA to protein matrix
 wave2_severity_pset <- gsva(t(wave2_soma_sev$soma_abundance), gsc, min.sz = 10, max.sz = Inf, verbose = TRUE, parallel.sz = 8)
 
+# apply linear mixed models to protein sets
 wave2_severity_pset_models <- pset_de(
   se = t(wave2_soma_sev$soma_abundance),
   col_data = wave2_soma_sev$sample_meta,
@@ -388,14 +438,14 @@ wave2_severity_pset_models <- pset_de(
 
 wave2_severity_pset_de <- get_eset_results(wave2_severity_pset_models, 2, "protein", "severity")
 
-wave2_severity_adjusted_pvals <- p.adjust(sapply(wave2_severity_pset_models, function(model) {anova(model)$`Pr(>F)`[1]}), method = "BH")
-stopifnot(sum(wave2_severity_adjusted_pvals < 0.05) == 465)
-
 ```
+
+# Session info
+
+Session information collected at the point this markdown document was knit.
 
 ```{r session_info}
 
 sessionInfo()
 
 ```
-
