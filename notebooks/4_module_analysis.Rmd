@@ -64,13 +64,13 @@ and are loaded in the chunk below.
 ```{r load_data, message=FALSE, warning=FALSE}
 
 # get the protein data in long format
-prot_long <- read.csv("results/4_module_analysis/collated_data/prot_long.csv")
+prot_long <- data.frame(data.table::fread("../results/4_module_analysis/collated_data/prot_long.csv.gz"))
 
 # convert the long format protein data to a matrix
 prot_wide <- tidyr::pivot_wider(dplyr::select(prot_long, sample, value, feature, individual_id), names_from = feature)
 
 # get the normalised RNA-seq data
-rna_se <- readRDS("results/4_module_analysis/collated_data/rna_data.rds")
+rna_se <- readRDS("../results/4_module_analysis/collated_data/rna_data.rds")
 
 # convert the long format RNA-seq data to a matrix
 rna_long <- reshape2::melt(assay(rna_se, 2))
