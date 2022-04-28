@@ -38,6 +38,7 @@ vignettes/*.pdf
 # R Environment Variables
 .Renviron
 
-# rmcorr matrices too big to upload, must be re-generated to run notebook
-results/4_module_analysis/rmcorr_matrices/rna_rmcorr_matrix.csv
-results/4_module_analysis/rmcorr_matrices/prot_rmcorr_matrix.csv
+# Result files
+results/2_gsva_analysis/*
+results/3_supervised_learning/*
+results/4_module_analysis/*
