@@ -1,6 +1,6 @@
 # Longitudinal COVID-19 Multi-omics Repository
 
-Repository for the paper: "Multi-omics before, during and after COVID-19 reveals severity-dependent trajectories and persistent pro-thrombotic transcriptome after recovery" by Gisby and Norzawani _et al._ doi: XX
+Repository for the paper: "Multi-omics identify LRRC15 as a COVID-19 severity predictor and persistent pro-thrombotic signals in convalescence" by Gisby and Norzawani _et al._ doi: https://doi.org/10.1101/2022.04.29.22274267 
 
 In this repository, we have stored:
  - A processed version of the dataset used in the paper (`data/`)
@@ -10,13 +10,13 @@ In this repository, we have stored:
 
 ## Description of the Dataset
 
-RNA sequencing, SomaLogic proteomics and flow cytometry data were generated for two cohorts of end-stage kidney disease patients with COVID-19. For a full description of the cohort and methods used to generate these data, see the corresponding publication: XX
+RNA sequencing, SomaLogic proteomics and flow cytometry data were generated for two cohorts of end-stage kidney disease patients with COVID-19. For a full description of the cohort and methods used to generate these data, see our preprint: https://doi.org/10.1101/2022.04.29.22274267 
 
-We have made the raw RNA sequencing reads available on the European Phenome-Genome archive: XX. In this repository, we have also included a counts matrix (`data/htseq_counts.csv`) generated for these reads. The steps used to generate this matrix are described in the corresponding publication (XX) and in the file `data/preprocessing_scripts/README.md`. The markdown documents in this repository (`notebooks/`) demonstrate the use of the `get_summarized_experiment` function to read and analyse these data.
+We intend to deposit the raw RNA sequencing data in the European Phenome-Genome Archive. In this repository, we have also included a counts matrix (`data/htseq_counts.csv`) generated for these reads. The steps used to generate this matrix are described in our preprint (https://doi.org/10.1101/2022.04.29.22274267) and in the file `data/preprocessing_scripts/README.md`. The markdown documents in this repository (`notebooks/`) demonstrate the use of the `get_summarized_experiment` function to read and analyse these data.
 
-We have made the SomaLogic proteomics and flow cytometry data available by means of Mendeley Data: XX. The proteomics data is also included in this repository by means of three files: `sample_technical_meta.csv`, `feature_meta.csv` and `soma_abundance.csv`. The first two files contain metadata columns for the samples and protein features, respectively. The final file includes the protein abundance data. The markdown documents in this repository (`notebooks/`) demonstrate the use of the `get_soma_data` function to read and analyse these data.
+We have made the SomaLogic proteomics and flow cytometry data available by means of Zenodo: https://doi.org/10.5281/zenodo.6497251. The proteomics data is also included in this repository by means of three files: `sample_technical_meta.csv`, `feature_meta.csv` and `soma_abundance.csv`. The first two files contain metadata columns for the samples and protein features, respectively. The final file includes the protein abundance data. The markdown documents in this repository (`notebooks/`) demonstrate the use of the `get_soma_data` function to read and analyse these data.
 
-Finally, clinical metadata is available for the two cohorts described in this study. The Wave 1 cohort consists of samples collected from patients during the first wave of COVID-19 in early 2020 while samples were collected from the Wave 2 cohort the following year. A full description of this cohort is available in the corresponding publication: XX. This data is available through Mendeley Data (XX) and in this repository (`data/w1_metadata.csv`) and (`w2_metadata.csv`).
+Finally, clinical metadata is available for the two cohorts described in this study. The Wave 1 cohort consists of samples collected from patients during the first wave of COVID-19 in early 2020 while samples were collected from the Wave 2 cohort the following year. A full description of this cohort is available in the preprint: https://doi.org/10.1101/2022.04.29.22274267. The data is available through Zenodo (https://doi.org/10.5281/zenodo.6497251) and in this repository (`data/w1_metadata.csv`) and (`w2_metadata.csv`).
 
 The features in the clinical metadata include:
 Column Name | Data Type | Description
@@ -55,7 +55,3 @@ Note that if you get an error (e.g. that a function cannot be found) it is likel
  - splines
  - ReactomePA
  - org.Hs.eg.db
-
-# License
-
-This work is licensed under a XX
