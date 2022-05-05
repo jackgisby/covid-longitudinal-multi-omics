@@ -156,7 +156,7 @@ however here we analyse gene sets rather than individual genes and proteins.
 
 We also do not compare pre-infection and recovery samples using GSVA. 
 
-## RNA-seq analysis using dream and GSVA
+## RNA-seq analysis
 
 In this section, we calculate the gene set x sample matrix for each cohort and
 compare COVID-19 positive vs. negative samples for each cohort using linear
@@ -265,7 +265,7 @@ wave2_case_control_eset_de <- get_eset_results(wave2_case_control_eset_models, 2
 
 ```
 
-## Proteomic analysis using GSVA
+## Proteomic analysis
 
 As for the transcriptomic data, we use GSVA to summarise the proteomics data into
 sets of proteins, then use linear mixed models to associate them with COVID-19
@@ -316,7 +316,7 @@ analyse COVID-19 positive samples by ordinal contemporaneous severity. However,
 in this case we analyse gene and proteins sets rather than individual genes and 
 proteins.
 
-## RNA-seq analysis using GSVA
+## RNA-seq analysis
 
 ### Wave 1 transcriptomic COVID-19 severity analysis
 
@@ -380,7 +380,7 @@ wave2_severity_eset_de <- get_eset_results(wave2_severity_eset_models, 2, "gene"
 
 ```
 
-## Proteomic analysis using GSVA
+## Proteomic analysis
 
 ### Wave 1 proteomic COVID-19 severity analysis
 

@@ -312,7 +312,7 @@ protein abundance, we modelled COVID-19 severity at time of sampling. Severity
 contrasts (`?contr.poly`) are generated for ordered factors, meaning that the
 linear mixed models consider severity to be an ordinal variable.
 
-## RNA-seq analysis using dream
+## RNA-seq analysis
 
 Like for the analysis of COVID-19 status, we explored the expression of 
 individual genes using `variancePartition::dream`. The analysis was run for 
@@ -382,7 +382,7 @@ print(head(wave2_severity_de$WHO_temp_severity_tt))
 
 ```
 
-## Proteomics
+## Proteomic analysis
 
 We then analysed the effect of 4-level COVID-19 WHO severity on the abundance of
 individual proteins using linear mixed models. As before, the analysis was applied
