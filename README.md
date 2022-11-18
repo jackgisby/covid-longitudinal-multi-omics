@@ -3,7 +3,7 @@
 Repository for the paper: "Multi-omics identify LRRC15 as a COVID-19 severity predictor and persistent pro-thrombotic signals in convalescence" by Gisby and Norzawani _et al._ doi: https://doi.org/10.1101/2022.04.29.22274267 
 
 In this repository, we have stored:
- - A processed version of the dataset used in the paper (`data/`)
+ - A version of the dataset used in the paper (`data/`)
  - Scripts that demonstrate the pre-processing applied to generate the datasets (`data/preprocessing_scripts/`)
  - RMD scripts replicating our major analyses (`notebooks/`)
  - Helper functions to process the data and perform basic analyses (`R/`)
