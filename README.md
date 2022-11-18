@@ -1,6 +1,6 @@
 # Longitudinal COVID-19 Multi-omics Repository
 
-Repository for the paper: "Multi-omics identify LRRC15 as a COVID-19 severity predictor and persistent pro-thrombotic signals in convalescence" by Gisby and Norzawani _et al._ doi: https://doi.org/10.1101/2022.04.29.22274267 
+Repository for the paper: "Multi-omics identify falling LRRC15 as a COVID-19 severity marker and persistent pro-thrombotic signals in convalescence" by Gisby and Norzawani _et al._ doi: https://doi.org/10.1101/2022.04.29.22274267 
 
 In this repository, we have stored:
  - A version of the dataset used in the paper (`data/`)
