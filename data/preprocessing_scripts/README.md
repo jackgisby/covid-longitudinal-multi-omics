@@ -2,7 +2,7 @@
 
 The raw RNA-seq reads were processed using the nf-core RNA-seq v3.2 pipeline, as described in our preprint: https://doi.org/10.1101/2022.04.29.22274267. Then, htseq-count was used to generate a raw counts matrix. The script used to do this can be found in this repository `data/preprocessing_scripts/run_htseq`. This script was run on the Imperial High Performance Computing cluster. The resulting counts matrix is available in this manuscript: `data/htseq_counts.csv`. 
 
-The proteomics data is available via Zenodo: https://doi.org/10.5281/zenodo.6497251. The original normalised data was received from SomaLogic as a .adat file. We converted these data from a .adat file to three .csv files (`sample_technical_meta.csv`, `feature_meta.csv` and `soma_abundance.csv`) using the script in `data/preprocessing_scripts/load_soma_from_adat.R`.
+The proteomics data is available via Zenodo: https://doi.org/10.5281/zenodo.6497250. The original normalised data was received from SomaLogic as a .adat file. We converted these data from a .adat file to three .csv files (`sample_technical_meta.csv`, `feature_meta.csv` and `soma_abundance.csv`) using the script in `data/preprocessing_scripts/load_soma_from_adat.R`.
 
 # Normalising the data
 
